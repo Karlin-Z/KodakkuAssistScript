@@ -9,9 +9,10 @@ namespace MyScriptNamespace
 {
     /// <summary>
     /// name and version affect the script name and version number displayed in the user interface.
+    /// territorys specifies the regions where this trigger is effective. If left empty, it will be effective in all regions.
     /// Classes with the same GUID will be considered the same trigger. Please ensure your GUID is unique and does not conflict with others.
     /// </summary>
-    [ScriptType(name:"SimpleScript",guid: "d3b6a9b4-1e0e-4e0c-b7c7-ff1fce0e6cf2",version:"0.0.0.1")]
+    [ScriptType(name: "SimpleScript", territorys: [],guid: "d3b6a9b4-1e0e-4e0c-b7c7-ff1fce0e6cf2",version:"0.0.0.1")]
     public class SimpleScript
     {
         /// <summary>
@@ -43,24 +44,24 @@ namespace MyScriptNamespace
         /// </summary>
         /// <param name="event">The event instance that triggers this method.</param>
         /// <param name="accessory">Pass the instances of methods and data that might be needed.</param>
-        [ScriptMethod(name: "Test StartCasting",eventType: EventTypeEnum.StartCasting,eventCondition: ["ActionId:0085"])]
+        [ScriptMethod(name: "Test StartCasting",eventType: EventTypeEnum.StartCasting,eventCondition: ["ActionId:133"])]
         public void PrintInfo(Event @event, ScriptAccessory accessory)
         {
             n++;
             accessory.Method.SendChat($"{@event["SourceId"]} {n}-th use the Medica II");
         }
 
-        [ScriptMethod(name: "Test Draw", eventType: EventTypeEnum.ActionEffect,eventCondition: ["ActionId:007C"])]
+        [ScriptMethod(name: "Test Draw", eventType: EventTypeEnum.ActionEffect,eventCondition: ["ActionId:124"])]
         public void DrawCircle(Event @event, ScriptAccessory accessory)
         {
             var prop = accessory.Data.GetDefaultDrawProperties();
             prop.Owner = Convert.ToUInt32(@event["SourceId"],16);
-            prop.DestoryAt = 10000;
+            prop.DestoryAt = 2000;
             prop.Color=accessory.Data.DefaultSafeColor;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, prop);
         }
 
-        [ScriptMethod(name: "Unconfigurable Method", eventType: EventTypeEnum.ActionEffect,eventCondition: ["ActionId:007C"],userControl:false)]
+        [ScriptMethod(name: "Unconfigurable Method", eventType: EventTypeEnum.ActionEffect,eventCondition: ["ActionId:124"],userControl:false)]
         public void UnconfigurableMethod(Event @event, ScriptAccessory accessory)
         {
             accessory.Log.Debug($"The unconfigurable method has been triggered.");
