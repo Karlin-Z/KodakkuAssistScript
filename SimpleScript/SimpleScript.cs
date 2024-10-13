@@ -28,7 +28,7 @@ namespace MyScriptNamespace
         /// This method is called at the start of each battle reset.
         /// If this method is not defined, the program will execute an empty method.
         /// </summary>
-        public void Init()
+        public void Init(ScriptAccessory accessory)
         {
             n = 0;
         }
