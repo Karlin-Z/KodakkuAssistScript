@@ -636,7 +636,7 @@ namespace KarlinScriptNamespace
         private int PositionFloorTo4Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r = Math.Floor(2 - 2 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 4;
+            var r = Math.Floor(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
             return (int)r;
 
         }
@@ -649,10 +649,9 @@ namespace KarlinScriptNamespace
         /// <returns></returns>
         private int PositionRoundTo4Dir(Vector3 point, Vector3 centre)
         {
-            // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r = Math.Round(2 - 2 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 4;
-            return (int)r;
 
+            var r = Math.Round(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
+            return (int)r;
         }
 
         /// <summary>
@@ -661,17 +660,17 @@ namespace KarlinScriptNamespace
         /// <param name="point"></param>
         /// <param name="centre"></param>
         /// <returns></returns>
-        private int PositionTo8Dir (Vector3 point, Vector3 centre) 
+        private int PositionTo8Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r= Math.Round(4 - 4 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 8;
+            var r = Math.Round(4 - 4 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 8;
             return (int)r;
-            
+
         }
         private int PositionTo12Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 12;
+            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 12;
             return (int)r;
 
         }

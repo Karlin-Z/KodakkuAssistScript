@@ -27,7 +27,7 @@ namespace KarlinScriptNamespace
 
         int? firstTargetIcon = null;
         bool floorHitDone = false;
-        object floorLock = new();
+        List<int> FloorBrokeList = new ();
         uint copyCatTarget;
         uint parse;
         List<uint> P3TetherTarget = new();
@@ -698,67 +698,228 @@ namespace KarlinScriptNamespace
         public void 地板破坏安全区重置(Event @event, ScriptAccessory accessory)
         {
             floorHitDone=false;
+            FloorBrokeList = new ();
         }
-        [ScriptMethod(name: "地板破坏安全区", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:39276"])]
+        [ScriptMethod(name: "地板破坏安全区", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(39276|37955)$"])]
         public void 地板破坏安全区(Event @event, ScriptAccessory accessory)
         {
             var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
             var centre = new Vector3(100, 0, 100);
             var dv = pos - centre;
             if (dv.Length() > 10) return;
-            Task.Delay(100).ContinueWith(t =>
+            lock (FloorBrokeList)
             {
-                lock (floorLock)
+                var index = FloorToIndex(pos);
+                FloorBrokeList.Add(index);
+                
+                if (FloorBrokeList.Count == 5)
                 {
-                    if (floorHitDone) return;
-                    var index = 0;
-                    if (dv.X > 0)
+                    var during = 20000;
+                    var nwSafe = (index == 0 || index == 2);
+                    Vector3 endPos = default;
+                    if (accessory.Data.PartyList.IndexOf(accessory.Data.Me) == 0)
                     {
-                        if (dv.Z > 0)
-                        {
-                            index = 3;
-                        }
-                        else
-                        {
-                            index = 0;
-                        }
+                        endPos = nwSafe ? new Vector3(95, 0, 95) : new Vector3(105, 0, 95);
                     }
                     else
                     {
-                        if (dv.Z > 0)
+                        endPos = nwSafe ? new Vector3(105, 0, 105) : new Vector3(95, 0, 105);
+                    }
+                    var safePosIndex1 = FloorToIndex(endPos);
+
+                    var safePosBrokeIndex= FloorBrokeList.IndexOf(safePosIndex1);
+                    if (safePosBrokeIndex == 0)
+                    {
+                        var startPos = Math.Abs(FloorBrokeList[3]- safePosIndex1)%4==1 ? IndexToFloor(FloorBrokeList[3]): IndexToFloor(FloorBrokeList[2]);
+                        var dp = accessory.Data.GetDefaultDrawProperties();
+                        dp.Name = $"地板破坏安全区";
+                        dp.Scale = new(2);
+                        dp.Position = startPos;
+                        dp.TargetPosition = endPos;
+                        dp.ScaleMode |= ScaleMode.YByDistance;
+                        dp.Color = accessory.Data.DefaultSafeColor;
+                        dp.DestoryAt = during;
+                        accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                    }
+                    if (safePosBrokeIndex == 1)
+                    {
+                        if(Math.Abs(FloorBrokeList[3] - safePosIndex1) % 4 == 1)
                         {
-                            index = 2;
+                            var startPos = IndexToFloor(FloorBrokeList[3]);
+                            var dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = startPos;
+                            dp.TargetPosition = endPos;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
                         }
                         else
                         {
-                            index = 1;
+                            var startPos = IndexToFloor(FloorBrokeList[3]);
+                            var pos2= IndexToFloor(FloorBrokeList[0]);
+                            var dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = startPos;
+                            dp.TargetPosition = pos2;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                            dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = pos2;
+                            dp.TargetPosition = endPos;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                        }
+                        
+
+
+                    }
+                    if (safePosBrokeIndex == 2)
+                    {
+                        if (Math.Abs(FloorBrokeList[0] - safePosIndex1) % 4 == 1)
+                        {
+                            var pos2 = IndexToFloor(FloorBrokeList[0]);
+                            var dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = endPos;
+                            dp.TargetPosition = pos2;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                            dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = pos2;
+                            dp.TargetPosition = new((endPos.X - 100) * 0.6f + 100, 0, (endPos.Z - 100) * 0.6f + 100);
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                        }
+                        else
+                        {
+                            var pos1 = IndexToFloor(FloorBrokeList[3]);
+                            var pos2 = IndexToFloor(FloorBrokeList[0]);
+                            var pos3 = IndexToFloor(FloorBrokeList[1]);
+
+                            var dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = pos1;
+                            dp.TargetPosition = pos2;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                            dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = pos2;
+                            dp.TargetPosition = pos3;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                            dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = pos3;
+                            dp.TargetPosition = endPos;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                        }
+                    }
+                    if (safePosBrokeIndex == 3)
+                    {
+                        if (Math.Abs(FloorBrokeList[0] - safePosIndex1) % 4 == 1)
+                        {
+                            var pos2 = IndexToFloor(FloorBrokeList[0]);
+                            var dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = endPos;
+                            dp.TargetPosition = pos2;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                            dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = pos2;
+                            dp.TargetPosition = new((endPos.X - 100) * 0.6f + 100, 0, (endPos.Z - 100) * 0.6f + 100);
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                        }
+                        else
+                        {
+                            var pos2 = IndexToFloor(FloorBrokeList[1]);
+                            var dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = endPos;
+                            dp.TargetPosition = pos2;
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                            dp = accessory.Data.GetDefaultDrawProperties();
+                            dp.Name = $"地板破坏安全区";
+                            dp.Scale = new(2);
+                            dp.Position = pos2;
+                            dp.TargetPosition = new((endPos.X - 100) * 0.6f + 100, 0, (endPos.Z - 100) * 0.6f + 100);
+                            dp.ScaleMode |= ScaleMode.YByDistance;
+                            dp.Color = accessory.Data.DefaultSafeColor;
+                            dp.DestoryAt = during;
+                            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
                         }
                     }
 
-                    var nwSafe= (index==0 || index==2);
-
-                    var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"地板破坏安全区";
-                    dp.Scale = new(10);
-                    dp.Position = nwSafe ? new Vector3(95, 0, 95) : new Vector3(105, 0, 95);
-                    dp.Color = accessory.Data.DefaultSafeColor;
-                    dp.DestoryAt = SafeFloorDuring;
-                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
-
-                    dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"地板破坏安全区";
-                    dp.Scale = new(10);
-                    dp.Position = nwSafe ? new Vector3(105, 0, 105) : new Vector3(95, 0, 105);
-                    dp.Color = accessory.Data.DefaultSafeColor;
-                    dp.DestoryAt = SafeFloorDuring;
-                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
 
 
-                    floorHitDone = true;
+
+                    
+
+
+                    
+                    
+                    
+                    
                 }
-            });
-            
+                
+
+                
+
+                
+
+            }
+
+
+
         }
+        
+        
 
         [ScriptMethod(name: "分身猫爪点名", eventType: EventTypeEnum.TargetIcon,userControl:false)]
         public void 分身猫爪点名(Event @event, ScriptAccessory accessory)
@@ -945,28 +1106,46 @@ namespace KarlinScriptNamespace
             firstTargetIcon??= int.Parse(id, System.Globalization.NumberStyles.HexNumber);
             return int.Parse(id, System.Globalization.NumberStyles.HexNumber) - (int)firstTargetIcon;
         }
-        private Vector3 RotatePoint(Vector3 point, Vector3 centre, float radian)
+        
+        private int FloorToIndex(Vector3 pos)
         {
-
-            Vector2 v2 = new(point.X - centre.X, point.Z - centre.Z);
-
-            var rot = (MathF.PI - MathF.Atan2(v2.X, v2.Y) + radian);
-            var lenth = v2.Length();
-            return new(centre.X + MathF.Sin(rot) * lenth, centre.Y, centre.Z - MathF.Cos(rot) * lenth);
+            var centre = new Vector3(100, 0, 100);
+            var dv = pos - centre;
+            var index = 0;
+            if (dv.X > 0)
+            {
+                if (dv.Z > 0)
+                {
+                    index = 3;
+                }
+                else
+                {
+                    index = 0;
+                }
+            }
+            else
+            {
+                if (dv.Z > 0)
+                {
+                    index = 2;
+                }
+                else
+                {
+                    index = 1;
+                }
+            }
+            return index;
         }
-        private int PositionTo8Dir (Vector3 point, Vector3 centre) 
+        private Vector3 IndexToFloor(int index)
         {
-            // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r= Math.Round(4 - 4 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 8;
-            return (int)r;
-            
-        }
-        private int PositionTo12Dir(Vector3 point, Vector3 centre)
-        {
-            // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 12;
-            return (int)r;
-
+            switch (index)
+            {
+                case 0: return new(105, 0, 95);
+                case 1: return new(95, 0, 95);
+                case 2: return new(95, 0, 105);
+                case 3: return new(105, 0, 105);
+            }
+            return default;
         }
     }
 }
