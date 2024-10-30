@@ -559,9 +559,8 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "场地引线分配", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:37871"])]
         public void 场地引线分配(Event @event, ScriptAccessory accessory)
         {
-            int[] tnGroup = TNTN_Fuse ? [0, 1, 2, 3] : [0, 2, 1, 3];
+            int[] tnGroup = TNTN_Fuse ? [0, 2, 1, 3] : [0, 1, 2, 3];
             int[] dpsGroup = [4, 5, 6, 7];
-
             var myPartyIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
             var myFuseIndex = tnGroup.IndexOf(myPartyIndex);
             myFuseIndex = myFuseIndex == -1 ? dpsGroup.IndexOf(myPartyIndex) : myFuseIndex;
@@ -591,7 +590,7 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "场地引线撞线提示", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:regex:^(3787[25])$", "TargetIndex:1"])]
         public void 场地引线撞线提示(Event @event, ScriptAccessory accessory)
         {
-            int[] tnGroup = TNTN_Fuse ? [0, 1, 2, 3] : [0, 2, 1, 3];
+            int[] tnGroup = TNTN_Fuse ? [0, 2, 1, 3] : [0, 1, 2, 3];
             int[] dpsGroup = [4, 5, 6, 7];
 
             var myPartyIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
@@ -644,7 +643,7 @@ namespace KarlinScriptNamespace
 
             var dp2 = accessory.Data.GetDefaultDrawProperties();
             dp2.Name = $"P3组合技击退";
-            dp2.Scale = new(1.5f,8);
+            dp2.Scale = new(1.5f,10);
             dp2.Color = accessory.Data.DefaultDangerColor.WithW(3);
             dp2.Owner = accessory.Data.Me;
             dp2.TargetObject = sid;
@@ -858,7 +857,7 @@ namespace KarlinScriptNamespace
 
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"P3场中击退塔";
-            dp.Scale = new(1.5f, 16);
+            dp.Scale = new(1.5f, 15);
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = accessory.Data.Me;
             dp.TargetPosition = new(100, 0, 100);

@@ -55,7 +55,10 @@ namespace KarlinScriptNamespace
 
         int[] FloorFire = [0, 0, 0];
         string storeSkill = "";
-        bool southSafe;
+        bool southSafe1st;
+        bool southSafe2nd;
+
+        DateTime timeLock = new();
 
         public void Init(ScriptAccessory accessory)
         {
@@ -953,7 +956,7 @@ namespace KarlinScriptNamespace
             if (!float.TryParse(@event["SourceRotation"], out var rot)) return;
             var spos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
             if (spos.Z > 170) return;
-            if (MathF.Abs(rot) < 0.1 || MathF.Abs(rot - float.Pi) % float.Pi < 0.1) return;
+            if (MathF.Abs(rot) < 0.1 || MathF.Abs(MathF.Abs(rot) - float.Pi) < 0.1) return;
 
             var line = (int)((spos.Z - 150) / 10);
             var d = rot > 0 ? 1 : -1;
@@ -1233,26 +1236,40 @@ namespace KarlinScriptNamespace
 
         }
 
-        [ScriptMethod(name: "分身月环十字第一轮收集", eventType: EventTypeEnum.PlayActionTimeline, eventCondition: ["Id:regex:^(456[13])$"],userControl:false)]
-        public void 分身月环十字第一轮收集(Event @event, ScriptAccessory accessory)
+        [ScriptMethod(name: "分身月环十字收集", eventType: EventTypeEnum.PlayActionTimeline, eventCondition: ["Id:regex:^(456[1234])$"],userControl:false)]
+        public void 分身月环十字收集(Event @event, ScriptAccessory accessory)
         {
             //4561 先直线
             //4563 先月环
             var pos= JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
             var dir8= PositionTo8Dir(pos, new(100, 0, 165));
-            southSafe = (@event["Id"] == "4561" && dir8 % 2 != 0) || (@event["Id"] == "4563" && dir8 % 2 == 0);
+            if (@event["Id"] == "4561" || @event["Id"] == "4563")
+            {
+                southSafe1st = (@event["Id"] == "4561" && dir8 % 2 != 0) || (@event["Id"] == "4563" && dir8 % 2 == 0);
+            }
+            else
+            {
+                southSafe2nd = (@event["Id"] == "4562" && dir8 % 2 != 0) || (@event["Id"] == "4564" && dir8 % 2 == 0);
+            }
+            
+            
         }
         [ScriptMethod(name: "分身月环十字 分散分摊", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(3844[34])$"])]
         public void 分身月环十字分散分摊(Event @event, ScriptAccessory accessory)
         {
 
             var spread = @event["ActionId"] == "38444";
+            
+            var myIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
             if (spread)
             {
+                int[] parterner = southSafe2nd ? [5, 7, 4, 6, 2, 0, 3, 1] : [4, 5, 6, 7, 0, 1, 2, 3];
+
+                //accessory.Log.Debug($"parterner{parterner[myIndex]}");
                 for (int i = 0; i < 8; i++)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"分身月环十字 分散";
+                    dp.Name = $"分身月环十字 先分散";
                     dp.Scale = new(5);
                     dp.Owner = accessory.Data.PartyList[i];
                     dp.Color = accessory.Data.DefaultDangerColor;
@@ -1261,43 +1278,162 @@ namespace KarlinScriptNamespace
                 }
                 accessory.Method.TextInfo("分散", 7000);
                 accessory.Method.TTS("分散");
+
+                for (int i = 0; i < 4; i++)
+                {
+                    var ii = myIndex > 3 ? i : i + 4;
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"分身月环十字 后分摊";
+                    dp.Scale = new(5);
+                    dp.Owner = accessory.Data.PartyList[ii];
+                    dp.Color = myIndex == ii || myIndex == parterner[ii] ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
+                    dp.Delay = 7000;
+                    dp.DestoryAt = 4000;
+                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+                }
+                Task.Delay(7000).ContinueWith(t =>
+                {
+                    accessory.Method.TextInfo("二二分摊", 4000);
+                    accessory.Method.TTS("二二分摊");
+                });
             }
             else
             {
-                int[] parterner = southSafe ? [4,6,7,5,0,3,1,2] : [4,5,6,7,0,1,2,3];
-                var myIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+                int[] parterner = southSafe1st ? [5, 7, 4, 6, 2, 0, 3, 1] : [4, 5, 6, 7, 0, 1, 2, 3];
                 for (int i = 0;i < 4;i++)
                 {
+                    var ii = myIndex > 3 ? i : i + 4;
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"分身月环十字 分摊";
+                    dp.Name = $"分身月环十字 先分摊";
                     dp.Scale = new(5);
-                    dp.Owner = myIndex > 3 ? accessory.Data.PartyList[i] : accessory.Data.PartyList[i + 4];
-                    dp.Color = myIndex == i || myIndex == parterner[i] ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
+                    dp.Owner = accessory.Data.PartyList[ii];
+                    dp.Color = myIndex == ii || myIndex == parterner[ii] ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
                     dp.DestoryAt = 7000;
                     accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
                 }
                 
                 accessory.Method.TextInfo("二二分摊", 7000);
                 accessory.Method.TTS("二二分摊");
+
+                for (int i = 0; i < 8; i++)
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"分身月环十字 后分散";
+                    dp.Scale = new(5);
+                    dp.Owner = accessory.Data.PartyList[i];
+                    dp.Color = accessory.Data.DefaultDangerColor;
+                    dp.Delay = 7000;
+                    dp.DestoryAt = 4000;
+                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+                }
+                Task.Delay(7000).ContinueWith(t =>
+                {
+                    accessory.Method.TextInfo("分散", 4000);
+                    accessory.Method.TTS("分散");
+                });
+                
             }
 
         }
         [ScriptMethod(name: "分身月环十字 分散分摊处理位置", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(3844[34])$"])]
         public void 分身月环十字分散分摊处理位置(Event @event, ScriptAccessory accessory)
         {
-            int[] rots = southSafe ? [0, 6, 4, 2, 0, 2, 6, 4] : [7, 1, 5, 3, 7, 1, 5, 3];
+            var r = 18f / 180 * float.Pi;
+            var spread = @event["ActionId"] == "38444";
+            int[] rots1 = southSafe1st ? [0, 2, 6, 4, 6, 0, 4, 2] : [7, 1, 5, 3, 7, 1, 5, 3];
+            int[] rots2 = southSafe2nd ? [0, 2, 6, 4, 6, 0, 4, 2] : [7, 1, 5, 3, 7, 1, 5, 3];
             var myIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
-            var pos= RotatePoint(new(100, 0, 152), new(100, 0, 165), rots[myIndex] * float.Pi / 4);
+            if (spread)
+            {
+                var r1 = 0f;
+                if (southSafe1st)
+                {
+                    r1 = (myIndex > 3) ? -r : r;
+                }
+                else
+                {
+                    r1 = (myIndex > 3) ? r : -r;
+                }
+                var pos1 = RotatePoint(new(100, 0, 152), new(100, 0, 165), rots1[myIndex] * float.Pi / 4-r1);
+                var pos2 = RotatePoint(new(100, 0, 152), new(100, 0, 165), rots2[myIndex] * float.Pi / 4);
 
-            var dp = accessory.Data.GetDefaultDrawProperties();
-            dp.Name = "分身月环十字 分散分摊处理位置";
-            dp.Scale = new(2);
-            dp.Owner = accessory.Data.Me;
-            dp.TargetPosition = pos;
-            dp.ScaleMode |= ScaleMode.YByDistance;
-            dp.Color = accessory.Data.DefaultSafeColor;
-            dp.DestoryAt = 7000;
-            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "分身月环十字 先分散处理位置";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = pos1;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 7000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "分身月环十字 后分摊处理位置1";
+                dp.Scale = new(2);
+                dp.Position = pos1;
+                dp.TargetPosition = pos2;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 7000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "分身月环十字 后分摊处理位置2";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = pos2;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 7000;
+                dp.DestoryAt = 4000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+            else
+            {
+                var r1 = 0f;
+                if (southSafe2nd)
+                {
+                    r1 = (myIndex > 3) ? -r : r;
+                }
+                else
+                {
+                    r1 = (myIndex > 3) ? r : -r;
+                }
+                var pos1 = RotatePoint(new(100, 0, 152), new(100, 0, 165), rots1[myIndex] * float.Pi / 4);
+                var pos2 = RotatePoint(new(100, 0, 152), new(100, 0, 165), rots2[myIndex] * float.Pi / 4 - r1);
+
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "分身月环十字 先分摊处理位置";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = pos1;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 7000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "分身月环十字 后分散处理位置1";
+                dp.Scale = new(2);
+                dp.Position = pos1;
+                dp.TargetPosition = pos2;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 7000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "分身月环十字 后分散处理位置2";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = pos2;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 7000;
+                dp.DestoryAt = 4000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+            
         }
 
         [ScriptMethod(name: "剑连线", eventType: EventTypeEnum.Tether, eventCondition: ["Id:regex:^(011[78])$"])]
@@ -1410,6 +1546,12 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "分身双人塔处理位置", eventType: EventTypeEnum.PlayActionTimeline, eventCondition: ["Id:4565"])]
         public void 分身双人塔处理位置(Event @event, ScriptAccessory accessory)
         {
+            lock (this)
+            {
+                if ((DateTime.Now - timeLock).TotalSeconds < 1) return;
+            }
+            timeLock = DateTime.Now;
+
             //var pos= JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             
@@ -1417,10 +1559,12 @@ namespace KarlinScriptNamespace
             var myIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
             if (long4000[myIndex])
             {
+
                 var obj = accessory.Data.Objects.SearchByEntityId(sid);
                 var rot = obj?.Rotation ?? 0;
+
                 var sourcepos = obj?.Position ?? default;
-                var dueFace = MathF.Abs(rot % (float.Pi / 2)) < 0.1;
+                var dueFace = MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1;
                 var dir4 = PositionRoundTo4Dir(sourcepos, new(100, 0, 165));
                 var atEast = ((dir4 == 0 || dir4 == 2) && !dueFace) || ((dir4 == 1 || dir4 == 3) && dueFace);
 
@@ -1446,6 +1590,7 @@ namespace KarlinScriptNamespace
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.DestoryAt = 10000;
                 accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
             }
             else
             {
@@ -1455,7 +1600,7 @@ namespace KarlinScriptNamespace
                     if (obj == null) return;
                     var rot = obj?.Rotation ?? 0;
                     var sourcepos = obj?.Position ?? default;
-                    var dueFace = MathF.Abs(rot % (float.Pi / 2)) < 0.1;
+                    var dueFace = MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1;
                     var dir4 = PositionRoundTo4Dir(sourcepos, new(100, 0, 165));
                     var atEast = ((dir4 == 0 || dir4 == 2) && !dueFace) || ((dir4 == 1 || dir4 == 3) && dueFace);
 
@@ -1503,7 +1648,7 @@ namespace KarlinScriptNamespace
                 var obj = accessory.Data.Objects.SearchByEntityId(towerId);
                 var rot = obj?.Rotation ?? 0;
                 var sourcepos = obj?.Position ?? default;
-                var dueFace = MathF.Abs(rot % (float.Pi / 2)) < 0.1;
+                var dueFace = MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1;
                 var towerdir4 = PositionRoundTo4Dir(sourcepos, centre);
                 var atEast = ((towerdir4 == 0 || towerdir4 == 2) && !dueFace) || ((towerdir4 == 1 || towerdir4 == 3) && dueFace);
 

@@ -17,7 +17,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name:"绝龙诗绘图",guid: "d9c97e91-9b59-432d-a3a1-42a8475b7e2a", version:"0.0.0.3")]
+    [ScriptType(name:"绝龙诗绘图", territorys: [968], guid: "d9c97e91-9b59-432d-a3a1-42a8475b7e2a", version:"0.0.0.3")]
     public class DragongSingDraw
     {
         
@@ -225,8 +225,7 @@ namespace KarlinScriptNamespace
             dp.TargetObject = sid;
             dp.Owner = accessory.Data.Me;
             dp.Color = accessory.Data.DefaultSafeColor;
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.DestoryAt = 7000;
             accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
 
@@ -337,8 +336,7 @@ namespace KarlinScriptNamespace
             dp.Scale = new(1);
             dp.Owner = accessory.Data.Me;
             dp.DestoryAt = 4000;
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
 
             var index = accessory.Data.PartyList.ToList().IndexOf(accessory.Data.Me);
             
@@ -557,8 +555,7 @@ namespace KarlinScriptNamespace
             {
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = "P2 1运冲锋安全区位置";
-                dp.ScalingByDistance = true;
-                dp.ScalingY = true;
+                dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.Owner = accessory.Data.Me;
                 dp.DestoryAt = 7000;
@@ -676,8 +673,7 @@ namespace KarlinScriptNamespace
             dp.Name = "P2 一运穿天连线";
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = p2BlueCircle[0];
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.DestoryAt = 9000;
             for (int i = 1; i < p2BlueCircle.Count; i++)
             {
@@ -699,8 +695,7 @@ namespace KarlinScriptNamespace
             dp.TargetResolvePattern = PositionResolvePatternEnum.OwnerTarget;
             dp.Delay = 3000;
             dp.DestoryAt = 3000;
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
         }
         [ScriptMethod(name: "P2 1运阿代尔菲尔冲锋", eventType: EventTypeEnum.NpcYell, eventCondition: ["Id:2550"])]
@@ -717,8 +712,7 @@ namespace KarlinScriptNamespace
             dp.TargetResolvePattern = PositionResolvePatternEnum.OwnerTarget;
             dp.Delay = 3000;
             dp.DestoryAt = 3000;
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
         }
         [ScriptMethod(name: "P2 1运骑神位置(Imgui)", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:25563"])]
@@ -731,8 +725,7 @@ namespace KarlinScriptNamespace
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.TargetObject = tordanId;
             dp.Owner = accessory.Data.Me;
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Delay = 500;
             dp.DestoryAt = 7000;
             accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
@@ -844,8 +837,7 @@ namespace KarlinScriptNamespace
                 dp.Color = accessory.Data.DefaultSafeColor.WithW(3);
                 dp.Owner = accessory.Data.Me;
                 dp.DestoryAt = 5000;
-                dp.ScalingByDistance = true;
-                dp.ScalingY = true;
+                dp.ScaleMode |= ScaleMode.YByDistance;
 
                 var cpos = new Vector3(100, 0, 100);
                 var sPos = (p2ZPos - cpos) / 15 * 19.5f + cpos;
@@ -865,8 +857,7 @@ namespace KarlinScriptNamespace
                 var dp2 = accessory.Data.GetDefaultDrawProperties();
                 dp2.Color = accessory.Data.DefaultSafeColor.WithW(3);
                 dp2.Scale = new(1.5f, 20);
-                dp2.ScalingByDistance = true;
-                dp2.ScalingY = true;
+                dp2.ScaleMode |= ScaleMode.YByDistance;
                 dp2.DestoryAt = 15000;
                 dp2.Position=dp.TargetPosition;
                 dp2.TargetPosition = RotatePoint(dp2.Position.Value, cpos, drot * 5);
@@ -983,8 +974,7 @@ namespace KarlinScriptNamespace
                 var s1 = p2Stone.IndexOf(true);
                 var s2 = p2Stone.LastIndexOf(true);
                 var dp = accessory.Data.GetDefaultDrawProperties();
-                dp.ScalingByDistance = true;
-                dp.ScalingY = true;
+                dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.Color = accessory.Data.DefaultDangerColor;
                 dp.Owner = accessory.Data.PartyList[s1];
                 dp.TargetObject = accessory.Data.PartyList[s2];
@@ -1005,8 +995,7 @@ namespace KarlinScriptNamespace
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = "P2 2运冰分摊位置(ImGui)";
                 dp.Scale = new(3f, 10);
-                dp.ScalingByDistance = true;
-                dp.ScalingY = true;
+                dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.Owner = accessory.Data.Me;
                 dp.TargetPosition = RotatePoint(new(100,0,88.5f),new(100,0,100),float.Pi/2*dir4);
@@ -1136,8 +1125,7 @@ namespace KarlinScriptNamespace
                 dp2.Owner = accessory.Data.Me;
                 dp2.TargetPosition = dp.Position;
                 dp2.Scale = new(3f, 10);
-                dp2.ScalingByDistance = true;
-                dp2.ScalingY = true;
+                dp2.ScaleMode |= ScaleMode.YByDistance;
                 dp2.Delay = 7500;
                 dp2.DestoryAt = 4500;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp2);
@@ -1417,8 +1405,7 @@ namespace KarlinScriptNamespace
                         dp.TargetObject = tid;
                         dp.Color=accessory.Data.DefaultSafeColor;
                         dp.DestoryAt = 6000;
-                        dp.ScalingByDistance= true;
-                        dp.ScalingY= true;
+                        dp.ScaleMode |= ScaleMode.YByDistance;
                         accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
                     }
                 });
@@ -1540,8 +1527,7 @@ namespace KarlinScriptNamespace
                 dp.Owner = id;
                 dp.Scale = new(10);
                 dp.TargetResolvePattern = PositionResolvePatternEnum.OwnerTarget;
-                dp.ScalingByDistance = true;
-                dp.ScalingY = true;
+                dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.DestoryAt = 7000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
             }
@@ -1619,8 +1605,7 @@ namespace KarlinScriptNamespace
             }
             dp.Owner = accessory.Data.Me;
             dp.Scale = new(5);
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.DestoryAt = 6000;
             dp.Name = $"P5一运白龙位置连线";
 
@@ -1643,8 +1628,7 @@ namespace KarlinScriptNamespace
             }
 
             dp.Scale = new(16, 60);
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Delay = p5TetherCrashDelay;
             dp.DestoryAt = 6000- p5TetherCrashDelay;
             dp.Name = $"P5一运双骑士连线冲锋";
@@ -1730,8 +1714,7 @@ namespace KarlinScriptNamespace
             dp.TargetPosition=p5DivePos;
             dp.Scale = new(1,60);
             dp.DestoryAt = 5000;
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Name = $"P5一运双龙俯冲处理位置";
 
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Displacement, dp);
@@ -1788,8 +1771,7 @@ namespace KarlinScriptNamespace
             dp.TargetPosition = p5GrenoPos;
             dp.Scale = new(5);
             dp.DestoryAt = 8000;
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
 
         }
@@ -1991,8 +1973,7 @@ namespace KarlinScriptNamespace
                 dp.Owner = accessory.Data.Me;
                 dp.Scale = new(1.5f, 60);
                 dp.DestoryAt = 7000;
-                dp.ScalingByDistance = true;
-                dp.ScalingY = true;
+                dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.Name = $"P5二运死宣引导站位{sony}";
 
                 var d = float.Pi / 180f;
@@ -2031,8 +2012,7 @@ namespace KarlinScriptNamespace
             dp.Owner = accessory.Data.Me;
             dp.Scale = new(1.5f, 60);
             dp.DestoryAt = 8000;
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Name = $"P5二运索尼引导站位{sony}";
 
             var d = float.Pi / 180f;
@@ -2063,8 +2043,7 @@ namespace KarlinScriptNamespace
                 dp.Owner = id;
                 dp.Scale = new(3, 60);
                 dp.DestoryAt = 5000;
-                dp.ScalingByDistance = true;
-                dp.ScalingY = true;
+                dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.Name = $"P5二运索尼{sony}处理位置";
 
                 var dp2 = accessory.Data.GetDefaultDrawProperties();
@@ -2192,8 +2171,7 @@ namespace KarlinScriptNamespace
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P6 第一次冰火线站位";
             dp.Owner = accessory.Data.Me;
-            dp.ScalingByDistance = true;
-            dp.ScalingY=true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Scale = new(1.5f);
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.DestoryAt = 7000;
@@ -2622,8 +2600,7 @@ namespace KarlinScriptNamespace
                 {
                     dp.Name = "P6 十字火起跑位置";
                     dp.Scale = new(1.5f);
-                    dp.ScalingByDistance=true;
-                    dp.ScalingY = true;
+                    dp.ScaleMode |= ScaleMode.YByDistance;
                     dp.Color=accessory.Data.DefaultSafeColor;
                     dp.Owner = accessory.Data.Me;
 
@@ -2654,8 +2631,7 @@ namespace KarlinScriptNamespace
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.Owner = accessory.Data.Me;
             dp.Scale = new(1.5f);
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.DestoryAt = 7000;
 
             var idIndex = accessory.Data.PartyList.ToList().IndexOf(accessory.Data.Me);
@@ -2944,8 +2920,7 @@ namespace KarlinScriptNamespace
             dp.Name = "P7 脑死地火点位1";
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.Scale = new(1.5f);
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Owner = accessory.Data.Me;
             dp.TargetPosition=pos1;
             dp.DestoryAt = 9000;
@@ -2955,8 +2930,7 @@ namespace KarlinScriptNamespace
             dp.Name = "P7 脑死地火点位2";
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.Scale = new(1.5f);
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Owner = accessory.Data.Me;
             dp.TargetPosition = pos2;
             dp.Delay = 9000;
@@ -2967,8 +2941,7 @@ namespace KarlinScriptNamespace
             dp.Name = "P7 脑死地火点位3";
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.Scale = new(1.5f);
-            dp.ScalingByDistance = true;
-            dp.ScalingY = true;
+            dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Position = pos1;
             dp.TargetPosition = pos2;
             dp.DestoryAt = 9000;
@@ -3018,8 +2991,7 @@ namespace KarlinScriptNamespace
                     dp.Name = "P7 死亡轮回剑分摊处";
                     dp.Color = accessory.Data.DefaultSafeColor;
                     dp.Scale = new(1.5f);
-                    dp.ScalingByDistance = true;
-                    dp.ScalingY = true;
+                    dp.ScaleMode |= ScaleMode.YByDistance;
                     dp.Owner = accessory.Data.Me;
                     if (ParseObjectId(@event["SourceId"], out var sid))
                     {
@@ -3123,8 +3095,7 @@ namespace KarlinScriptNamespace
                 dp.Owner = accessory.Data.Me;
                 dp.TargetPosition = pos1;
                 dp.Scale = new(1.5f);
-                dp.ScalingByDistance = true;
-                dp.ScalingY = true;
+                dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.DestoryAt = 9000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
 
@@ -3134,8 +3105,7 @@ namespace KarlinScriptNamespace
                 dp2.Position = pos1;
                 dp2.TargetPosition = pos2;
                 dp2.Scale = new(1.5f);
-                dp2.ScalingByDistance = true;
-                dp2.ScalingY = true;
+                dp2.ScaleMode |= ScaleMode.YByDistance;
                 dp2.DestoryAt = 9000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp2);
 
@@ -3145,8 +3115,7 @@ namespace KarlinScriptNamespace
                 dp3.Owner = accessory.Data.Me;
                 dp3.TargetPosition = pos2;
                 dp3.Scale = new(1.5f);
-                dp3.ScalingByDistance = true;
-                dp3.ScalingY = true;
+                dp3.ScaleMode |= ScaleMode.YByDistance;
                 dp3.Delay = 9000;
                 dp3.DestoryAt = 4000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp3);
@@ -3172,8 +3141,7 @@ namespace KarlinScriptNamespace
                 dp2.Position = pos1;
                 dp2.TargetPosition = pos2;
                 dp2.Scale = new(1.5f);
-                dp2.ScalingByDistance = true;
-                dp2.ScalingY = true;
+                dp2.ScaleMode |= ScaleMode.YByDistance;
                 dp2.DestoryAt = 13000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp2);
 
@@ -3183,8 +3151,7 @@ namespace KarlinScriptNamespace
                 dp3.Owner = accessory.Data.Me;
                 dp3.TargetPosition = pos2;
                 dp3.Scale = new(1.5f);
-                dp3.ScalingByDistance = true;
-                dp3.ScalingY = true;
+                dp3.ScaleMode |= ScaleMode.YByDistance;
                 dp3.Delay = 13000;
                 dp3.DestoryAt = 4000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp3);
@@ -3228,17 +3195,50 @@ namespace KarlinScriptNamespace
             var lenth = v2.Length();
             return new(centre.X + MathF.Sin(rot) * lenth, centre.Y, centre.Z - MathF.Cos(rot) * lenth);
         }
-        private int PositionTo8Dir (Vector3 point, Vector3 centre) 
+        /// <summary>
+        /// 向下取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionFloorTo4Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r= Math.Round(4 - 4 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 8;
+            var r = Math.Floor(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
             return (int)r;
-            
+
+        }
+
+        /// <summary>
+        /// 向近的取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionRoundTo4Dir(Vector3 point, Vector3 centre)
+        {
+
+            var r = Math.Round(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
+            return (int)r;
+        }
+
+        /// <summary>
+        /// 向近的取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionTo8Dir(Vector3 point, Vector3 centre)
+        {
+            // Dirs: N = 0, NE = 1, ..., NW = 7
+            var r = Math.Round(4 - 4 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 8;
+            return (int)r;
+
         }
         private int PositionTo12Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 12;
+            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 12;
             return (int)r;
 
         }

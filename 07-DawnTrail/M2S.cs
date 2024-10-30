@@ -22,9 +22,10 @@ namespace KarlinScriptNamespace
     [ScriptType(name: "M2s绘图", territorys:[1228],guid: "d99c7e91-9b56-432d-a3a8-49a8586915b7e2a", version:"0.0.0.1")]
     public class M2s绘图绘图
     {
-        
-        
-        
+        [UserSetting("地面爱心轨迹长度")]
+        public float heartLenth { get; set; } = 4;
+
+
         int? firstTargetIcon = null;
         int parse;
         bool spreadFlow;
@@ -46,6 +47,11 @@ namespace KarlinScriptNamespace
             TowerCount = 0;
             //accessory.Method.MarkClear();
 
+        }
+        [ScriptMethod(name: "直播1记录", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:39972"], userControl: false)]
+        public void 直播1记录(Event @event, ScriptAccessory accessory)
+        {
+            parse = 1;
         }
         [ScriptMethod(name: "直播2记录", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:39973"],userControl:false)]
         public void 直播2记录(Event @event, ScriptAccessory accessory)
@@ -410,12 +416,26 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
 
             var dp = accessory.Data.GetDefaultDrawProperties();
-            dp.Name = $"爱心";
-            dp.Scale = new(2f, 4);
+            dp.Name = $"爱心{sid}";
+            dp.Scale = new(2f, heartLenth);
             dp.Color = accessory.Data.DefaultDangerColor.WithW(3);
             dp.Owner = sid;
-            dp.DestoryAt = 15000;
+            dp.DestoryAt = 40000;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Displacement, dp);
+        }
+        [ScriptMethod(name: "直播1地面爱心删除", eventType: EventTypeEnum.RemoveCombatant, eventCondition: ["DataId:16943"],userControl:false)]
+        public void 地面爱心删除(Event @event, ScriptAccessory accessory)
+        {
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            accessory.Method.RemoveDraw($"爱心{sid}");
+            
+        }
+        [ScriptMethod(name: "直播1地面爱心删除2", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:37285"], userControl: false)]
+        public void 地面爱心删除2(Event @event, ScriptAccessory accessory)
+        {
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            accessory.Method.RemoveDraw($"爱心{sid}");
+
         }
         [ScriptMethod(name: "直播2爱心Buff收集", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:^(392[23456])$"],userControl:false)]
         public void 直播2爱心Buff收集(Event @event, ScriptAccessory accessory)
@@ -460,8 +480,8 @@ namespace KarlinScriptNamespace
                 var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
                 var dir4 = PositionRoundTo4Dir(pos, new(100, 0, 100));
                 var ismy = false;
-                if ((dir4 == 0 || dir4 == 1) && index < 4) ismy = true;
-                if ((dir4 == 2 || dir4 == 3) && index > 3) ismy = true;
+                if ((dir4 == 0 || dir4 == 3) && index < 4) ismy = true;
+                if ((dir4 == 2 || dir4 == 1) && index > 3) ismy = true;
                 if (ismy)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();

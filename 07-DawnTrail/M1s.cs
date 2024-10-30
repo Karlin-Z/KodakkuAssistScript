@@ -24,6 +24,8 @@ namespace KarlinScriptNamespace
     {
         [UserSetting("安全地板显示时长(ms)")]
         public int SafeFloorDuring { get; set; } = 5000;
+        [UserSetting("地板修复击退分组Mt组北半场")]
+        public bool MtSouthSafeFloor { get; set; } = true;
 
         int? firstTargetIcon = null;
         bool floorHitDone = false;
@@ -587,7 +589,7 @@ namespace KarlinScriptNamespace
                     dp = accessory.Data.GetDefaultDrawProperties();
                     dp.Name = $"跳跃左右刀-{(isNouthCopy ? "北" : "南")}分身{(leftJump ? "左" : "右")}跳{(leftFast ? "左" : "右")}刀慢";
                     dp.Position = pos + dv;
-                    dp.Scale = new(40);
+                    dp.Scale = new(60, 30);
                     dp.Rotation = -rotation;
                     dp.Color = accessory.Data.DefaultDangerColor.WithW(3); ;
                     dp.Delay = 16000;
@@ -943,7 +945,7 @@ namespace KarlinScriptNamespace
             });
         }
 
-        [ScriptMethod(name: "分身砸地十字", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:37960"])]
+        [ScriptMethod(name: "分身砸地十字", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(37960|37958)$"])]
         public void 分身砸地十字(Event @event, ScriptAccessory accessory)
         {
             Task.Delay(50).ContinueWith(t =>
@@ -968,46 +970,19 @@ namespace KarlinScriptNamespace
                 accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
             });
         }
-        [ScriptMethod(name: "分身击飞十字", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:37958"])]
-        public void 分身击飞十字(Event @event, ScriptAccessory accessory)
-        {
-            Task.Delay(50).ContinueWith(t =>
-            {
-                var dp = accessory.Data.GetDefaultDrawProperties();
-                dp.Name = "分身击飞十字";
-                dp.Scale = new(1.5f, 80);
-                dp.Color = accessory.Data.DefaultDangerColor;
-                dp.Owner = copyCatTarget;
-                dp.Offset = new(0, 0, -10);
-                dp.FixRotation = true;
-                dp.DestoryAt = 9000;
-                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
-
-                dp = accessory.Data.GetDefaultDrawProperties();
-                dp.Name = "分身击飞十字";
-                dp.Scale = new(1.5f, 80);
-                dp.Color = accessory.Data.DefaultDangerColor;
-                dp.Owner = copyCatTarget;
-                dp.Offset = new(0, 0, -10);
-                dp.FixRotation = true;
-                dp.Rotation = float.Pi / 2;
-                dp.DestoryAt = 9000;
-                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
-            });
-        }
 
         [ScriptMethod(name: "地板修复安全区", eventType: EventTypeEnum.EnvControl, eventCondition: ["Id:00080004", "Index:regex:^(0000000[1247])$"])]
         public void 地板修复安全区(Event @event, ScriptAccessory accessory)
         {
-            int[] h1Group = [0, 2, 4, 6];
+            int[] southGroup = MtSouthSafeFloor ? [0, 2, 4, 6] : [1, 3, 5, 7];
             var myIndex = accessory.Data.PartyList.ToList().IndexOf(accessory.Data.Me);
-            var isH1Group = h1Group.Contains(myIndex);
+            var isSouthGroup = southGroup.Contains(myIndex);
             if (@event["Index"]== "00000001")
             {
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = $"地板修复安全区";
                 dp.Scale = new(20f, 10);
-                dp.Position = isH1Group ? new(90, 0, 85) : new(110, 0, 115);
+                dp.Position = isSouthGroup ? new(90, 0, 85) : new(110, 0, 115);
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.DestoryAt = 9000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
@@ -1017,7 +992,7 @@ namespace KarlinScriptNamespace
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = $"地板修复安全区";
                 dp.Scale = new(20f, 10);
-                dp.Position = isH1Group ? new(110, 0, 85) : new(90, 0, 115);
+                dp.Position = isSouthGroup ? new(110, 0, 85) : new(90, 0, 115);
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.DestoryAt = 9000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
@@ -1027,7 +1002,7 @@ namespace KarlinScriptNamespace
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = $"地板修复安全区";
                 dp.Scale = new(10, 20);
-                dp.Position = isH1Group ? new(85, 0, 90) : new(115, 0, 110);
+                dp.Position = isSouthGroup ? new(85, 0, 90) : new(115, 0, 110);
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.DestoryAt = 9000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
@@ -1037,7 +1012,7 @@ namespace KarlinScriptNamespace
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = $"地板修复安全区";
                 dp.Scale = new(10, 20);
-                dp.Position = isH1Group ? new(115, 0, 90) : new(85, 0, 110);
+                dp.Position = isSouthGroup ? new(115, 0, 90) : new(85, 0, 110);
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.DestoryAt = 9000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
@@ -1051,7 +1026,7 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"击退";
-            dp.Scale = new(1.5f,20);
+            dp.Scale = new(1.5f,21);
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.Owner = accessory.Data.Me;
             dp.TargetObject = sid;
