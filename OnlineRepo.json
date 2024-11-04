@@ -14,10 +14,38 @@
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M2S.cs"
 },
 {
-    "Name": "极艳翼蛇鸟图",
+    "Name": "M3s绘图",
+    "Guid": "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M3S.cs"
+},
+{
+    "Name": "M4s绘图",
+    "Guid": "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M4S.cs"
+},
+{
+    "Name": "极佐拉加绘图",
+    "Guid": "d9c97e91-9b59-432d-a3a1-42a8586985b7e2a",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E8%89%B3%E7%BF%BC%E8%9B%87%E9%B8%9F.cs"
+},
+{
+    "Name": "极艳翼蛇鸟绘图",
     "Guid": "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a",
     "Version": "0.0.0.2",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E8%89%B3%E7%BF%BC%E8%9B%87%E9%B8%9F.cs"
+},
+{
+    "Name": "绝龙诗绘图",
+    "Guid": "d9c97e91-9b59-432d-a3a1-42a8475b7e2a",
+    "Version": "0.0.0.3",
+    "Author": "Karlin",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%B9%BB%E6%83%B3%E9%BE%99%E8%AF%97%E7%BB%9D%E5%A2%83%E6%88%98.cs"
 }
 ]

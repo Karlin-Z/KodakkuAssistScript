@@ -21,7 +21,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.1")]
+    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.1", author: "Karlin")]
     public class M3s绘图绘图
     {
         [UserSetting("按照TNTN顺序安排撞线位置")]

@@ -17,7 +17,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "极艳翼蛇鸟图", territorys:[1196],guid: "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a", version:"0.0.0.1")]
+    [ScriptType(name: "极艳翼蛇鸟绘图", territorys:[1196],guid: "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a", version:"0.0.0.2", author: "Karlin")]
     public class ValigarmandaExDraw
     {
         
@@ -196,11 +196,12 @@ namespace KarlinScriptNamespace
 
         }
 
-        [ScriptMethod(name: "体操分摊", eventType: EventTypeEnum.StartCasting)]
+        [ScriptMethod(name: "体操分摊", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(36808|36812|36816)$"])]
         public void 体操分摊(Event @event, ScriptAccessory accessory)
         {
             if (parse != 1) return;
-            if (@event["ActionId"]!= "36812" && @event["ActionId"] != "36816" && @event["ActionId"] != "36808") return;
+            accessory.Log.Debug(@event["ActionId"]);
+            //if (@event["ActionId"]!= "36812" && @event["ActionId"] != "36816" && @event["ActionId"] != "36808") return;
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "体操分摊";
             dp.Scale = new(4);
@@ -448,17 +449,50 @@ namespace KarlinScriptNamespace
             var lenth = v2.Length();
             return new(centre.X + MathF.Sin(rot) * lenth, centre.Y, centre.Z - MathF.Cos(rot) * lenth);
         }
-        private int PositionTo8Dir (Vector3 point, Vector3 centre) 
+        /// <summary>
+        /// 向下取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionFloorTo4Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r= Math.Round(4 - 4 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 8;
+            var r = Math.Floor(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
             return (int)r;
-            
+
+        }
+
+        /// <summary>
+        /// 向近的取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionRoundTo4Dir(Vector3 point, Vector3 centre)
+        {
+
+            var r = Math.Round(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
+            return (int)r;
+        }
+
+        /// <summary>
+        /// 向近的取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionTo8Dir(Vector3 point, Vector3 centre)
+        {
+            // Dirs: N = 0, NE = 1, ..., NW = 7
+            var r = Math.Round(4 - 4 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 8;
+            return (int)r;
+
         }
         private int PositionTo12Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 12;
+            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 12;
             return (int)r;
 
         }

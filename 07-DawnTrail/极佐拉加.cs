@@ -17,7 +17,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "极佐拉加绘图",territorys:[1201],guid: "d9c97e91-9b59-432d-a3a1-42a8586985b7e2a", version:"0.0.0.1")]
+    [ScriptType(name: "极佐拉加绘图",territorys:[1201],guid: "d9c97e91-9b59-432d-a3a1-42a8586985b7e2a", version:"0.0.0.1", author: "Karlin")]
     public class ZoraalaExDraw
     {
         
@@ -613,17 +613,50 @@ namespace KarlinScriptNamespace
             var lenth = v2.Length();
             return new(centre.X + MathF.Sin(rot) * lenth, centre.Y, centre.Z - MathF.Cos(rot) * lenth);
         }
-        private int PositionTo8Dir (Vector3 point, Vector3 centre) 
+        /// <summary>
+        /// 向下取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionFloorTo4Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r= Math.Round(4 - 4 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 8;
+            var r = Math.Floor(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
             return (int)r;
-            
+
+        }
+
+        /// <summary>
+        /// 向近的取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionRoundTo4Dir(Vector3 point, Vector3 centre)
+        {
+
+            var r = Math.Round(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
+            return (int)r;
+        }
+
+        /// <summary>
+        /// 向近的取
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
+        private int PositionTo8Dir(Vector3 point, Vector3 centre)
+        {
+            // Dirs: N = 0, NE = 1, ..., NW = 7
+            var r = Math.Round(4 - 4 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 8;
+            return (int)r;
+
         }
         private int PositionTo12Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
-            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.Z, point.Z - centre.Z) / Math.PI) % 12;
+            var r = Math.Round(6 - 6 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 12;
             return (int)r;
 
         }
