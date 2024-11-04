@@ -1,4 +1,5 @@
-[{
+[
+{
     "Name": "M1s绘图",
     "Guid": "8010d865-7d6d-4c23-92e0-f4b0120e18ac",
     "Version": "0.0.0.1",
@@ -6,10 +7,17 @@
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M1s.cs"
 },
 {
-    "Name": "M3s绘图",
+    "Name": "M2s绘图",
     "Guid": "d99c7e91-9b56-432d-a3a8-49a8586915b7e2a",
     "Version": "0.0.0.1",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M2S.cs"
+},
+{
+    "Name": "极艳翼蛇鸟图",
+    "Guid": "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a",
+    "Version": "0.0.0.2",
+    "Author": "Karlin",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E8%89%B3%E7%BF%BC%E8%9B%87%E9%B8%9F.cs"
 }
 ]
