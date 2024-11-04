@@ -19,7 +19,7 @@ using KodakkuAssist.Data;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.2")]
+    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.3")]
     public class M1sDraw
     {
         [UserSetting("安全地板显示时长(ms)")]
