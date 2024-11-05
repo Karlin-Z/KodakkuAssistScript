@@ -47,5 +47,12 @@
     "Version": "0.0.0.3",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%B9%BB%E6%83%B3%E9%BE%99%E8%AF%97%E7%BB%9D%E5%A2%83%E6%88%98.cs"
+},
+{
+    "Name": "多变迷宫自动化",
+    "Guid": "ad122d3e-0966-48c8-bddb-a0a3e9fe3a61",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%A4%9A%E5%8F%98%E8%BF%B7%E5%AE%AB%E8%87%AA%E5%8A%A8%E5%8C%96.cs"
 }
 ]
