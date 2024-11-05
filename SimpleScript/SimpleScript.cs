@@ -22,8 +22,20 @@ namespace MyScriptNamespace
         public int prop1 { get; set; } = 1;
         [UserSetting("Another Test Property")]
         public bool prop2 { get; set; } = false;
+
+        [UserSetting("UserColorSetting")]
+        public ScriptColor color { get; set; } = new();
+
+        [UserSetting("EnumSetting")]
+        public TestEnum enumSetting { get; set; }
         int n = 0;
 
+
+        public enum TestEnum
+        {
+            First,
+            Second
+        }
         /// <summary>
         /// This method is called at the start of each battle reset.
         /// If this method is not defined, the program will execute an empty method.
@@ -49,6 +61,8 @@ namespace MyScriptNamespace
         {
             n++;
             accessory.Method.SendChat($"{@event["SourceId"]} {n}-th use the Medica II");
+            accessory.Log.Debug($"Prop2 is {prop2}");
+            accessory.Log.Debug($"enum is {enumSetting}");
         }
 
         [ScriptMethod(name: "Test Draw", eventType: EventTypeEnum.ActionEffect,eventCondition: ["ActionId:124"])]
@@ -57,7 +71,7 @@ namespace MyScriptNamespace
             var prop = accessory.Data.GetDefaultDrawProperties();
             prop.Owner = Convert.ToUInt32(@event["SourceId"],16);
             prop.DestoryAt = 2000;
-            prop.Color=accessory.Data.DefaultSafeColor;
+            prop.Color=color.V4;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, prop);
         }
 

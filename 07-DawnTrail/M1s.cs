@@ -19,21 +19,28 @@ using KodakkuAssist.Data;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.3", author: "Karlin")]
+    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.4", author: "Karlin")]
     public class M1sDraw
     {
-        [UserSetting("安全地板显示时长(ms)")]
-        public int SafeFloorDuring { get; set; } = 5000;
-        [UserSetting("地板修复击退分组Mt组北半场")]
-        public bool MtSouthSafeFloor { get; set; } = true;
+        [UserSetting("地板修复击退,Mt组安全半场")]
+        public KnockBackMtPosition MtSafeFloor { get; set; }
+
+        public enum KnockBackMtPosition
+        {
+            NouthHalf,
+            SouthHalf,
+            EastHalf,
+            WestHalf
+        }
 
         int? firstTargetIcon = null;
-        bool floorHitDone = false;
         List<int> FloorBrokeList = new ();
         uint copyCatTarget;
         uint parse;
         List<uint> P3TetherTarget = new();
         List<string> P3JumpSkill = new();
+
+
 
 
         public void Init(ScriptAccessory accessory)
@@ -699,7 +706,6 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "地板破坏安全区重置", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:37953"],userControl:false)]
         public void 地板破坏安全区重置(Event @event, ScriptAccessory accessory)
         {
-            floorHitDone=false;
             FloorBrokeList = new ();
         }
         [ScriptMethod(name: "地板破坏安全区", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(39276|37955)$"])]
@@ -974,48 +980,97 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "地板修复安全区", eventType: EventTypeEnum.EnvControl, eventCondition: ["Id:00080004", "Index:regex:^(0000000[1247])$"])]
         public void 地板修复安全区(Event @event, ScriptAccessory accessory)
         {
-            int[] southGroup = MtSouthSafeFloor ? [0, 2, 4, 6] : [1, 3, 5, 7];
             var myIndex = accessory.Data.PartyList.ToList().IndexOf(accessory.Data.Me);
-            var isSouthGroup = southGroup.Contains(myIndex);
-            if (@event["Index"]== "00000001")
+
+            if (MtSafeFloor == KnockBackMtPosition.SouthHalf || MtSafeFloor == KnockBackMtPosition.NouthHalf)
             {
-                var dp = accessory.Data.GetDefaultDrawProperties();
-                dp.Name = $"地板修复安全区";
-                dp.Scale = new(20f, 10);
-                dp.Position = isSouthGroup ? new(90, 0, 85) : new(110, 0, 115);
-                dp.Color = accessory.Data.DefaultSafeColor;
-                dp.DestoryAt = 9000;
-                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                int[] northGroup = MtSafeFloor == KnockBackMtPosition.NouthHalf ? [0, 2, 4, 6] : [1, 3, 5, 7];
+                var isNorthGroup = northGroup.Contains(myIndex);
+                if (@event["Index"] == "00000001")
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"地板修复安全区";
+                    dp.Scale = new(20f, 10);
+                    dp.Position = isNorthGroup ? new(90, 0, 85) : new(110, 0, 115);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 9000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                }
+                if (@event["Index"] == "00000002")
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"地板修复安全区";
+                    dp.Scale = new(20f, 10);
+                    dp.Position = isNorthGroup ? new(110, 0, 85) : new(90, 0, 115);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 9000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                }
+                if (@event["Index"] == "00000004")
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"地板修复安全区";
+                    dp.Scale = new(10, 20);
+                    dp.Position = isNorthGroup ? new(85, 0, 90) : new(115, 0, 110);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 9000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                }
+                if (@event["Index"] == "00000007")
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"地板修复安全区";
+                    dp.Scale = new(10, 20);
+                    dp.Position = isNorthGroup ? new(115, 0, 90) : new(85, 0, 110);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 9000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                }
             }
-            if (@event["Index"] == "00000002")
+            else
             {
-                var dp = accessory.Data.GetDefaultDrawProperties();
-                dp.Name = $"地板修复安全区";
-                dp.Scale = new(20f, 10);
-                dp.Position = isSouthGroup ? new(110, 0, 85) : new(90, 0, 115);
-                dp.Color = accessory.Data.DefaultSafeColor;
-                dp.DestoryAt = 9000;
-                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
-            }
-            if (@event["Index"] == "00000004")
-            {
-                var dp = accessory.Data.GetDefaultDrawProperties();
-                dp.Name = $"地板修复安全区";
-                dp.Scale = new(10, 20);
-                dp.Position = isSouthGroup ? new(85, 0, 90) : new(115, 0, 110);
-                dp.Color = accessory.Data.DefaultSafeColor;
-                dp.DestoryAt = 9000;
-                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
-            }
-            if (@event["Index"] == "00000007")
-            {
-                var dp = accessory.Data.GetDefaultDrawProperties();
-                dp.Name = $"地板修复安全区";
-                dp.Scale = new(10, 20);
-                dp.Position = isSouthGroup ? new(115, 0, 90) : new(85, 0, 110);
-                dp.Color = accessory.Data.DefaultSafeColor;
-                dp.DestoryAt = 9000;
-                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                int[] eastGroup = MtSafeFloor == KnockBackMtPosition.EastHalf ? [0, 2, 4, 6] : [1, 3, 5, 7];
+                var isEastGroup = eastGroup.Contains(myIndex);
+                if (@event["Index"] == "00000001")
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"地板修复安全区";
+                    dp.Scale = new(20f, 10);
+                    dp.Position = isEastGroup ?  new(110, 0, 115): new(90, 0, 85);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 9000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                }
+                if (@event["Index"] == "00000002")
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"地板修复安全区";
+                    dp.Scale = new(20f, 10);
+                    dp.Position = isEastGroup ? new(110, 0, 85) : new(90, 0, 115);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 9000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                }
+                if (@event["Index"] == "00000004")
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"地板修复安全区";
+                    dp.Scale = new(10, 20);
+                    dp.Position = isEastGroup ? new(115, 0, 110) : new(85, 0, 90);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 9000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                }
+                if (@event["Index"] == "00000007")
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"地板修复安全区";
+                    dp.Scale = new(10, 20);
+                    dp.Position = isEastGroup ? new(115, 0, 90) : new(85, 0, 110);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 9000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Straight, dp);
+                }
             }
 
 
