@@ -22,12 +22,13 @@ using System.Collections;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.1", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.2", author: "Karlin")]
     public class M4s绘图绘图
     {
-        
-        
-        
+        [UserSetting("奔雷炮站位方式")]
+        public LaserPositionEnum LaserPosition { get; set; }
+
+
         int? firstTargetIcon = null;
         int parse;
         bool imP1lighting=false;
@@ -59,6 +60,12 @@ namespace KarlinScriptNamespace
         bool southSafe2nd;
 
         DateTime timeLock = new();
+
+        public enum LaserPositionEnum
+        {
+            Game8,
+            SuperJump
+        }
 
         public void Init(ScriptAccessory accessory)
         {
@@ -815,9 +822,19 @@ namespace KarlinScriptNamespace
             }
             if (statusID == "4004" || statusID == "4005")
             {
-                var dvx = isEastYellowLaser ? 1 : -1;
                 dealPos += isYelowBuff[myIndex] != isSouthYellowLaser ? new(0, 0, 2.1f) : new(0, 0, -2.1f);
-                dealPos += myIndex > 3 ? new(-2.9f * dvx, 0, 0) : new(2.9f * dvx, 0, 0);
+                if (LaserPosition==LaserPositionEnum.Game8)
+                {
+                    var dvx = isEastYellowLaser ? 1 : -1;
+                    dealPos += myIndex > 3 ? new(-2.9f * dvx, 0, 0) : new(2.9f * dvx, 0, 0);
+                }
+                if (LaserPosition==LaserPositionEnum.SuperJump)
+                {
+                    var dvx = myIndex > 3 ? 1 : -1;
+                    var isSourth = isYelowBuff[myIndex] != isSouthYellowLaser;
+                    dealPos += isSourth ? new(-2.9f * dvx, 0, 0) : new(2.9f * dvx, 0, 0);
+                }
+                
             }
 
             var dp = accessory.Data.GetDefaultDrawProperties();
