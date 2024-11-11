@@ -22,7 +22,7 @@ using System.Collections;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.2", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.3", author: "Karlin")]
     public class M4s绘图绘图
     {
         [UserSetting("奔雷炮站位方式")]
@@ -64,7 +64,7 @@ namespace KarlinScriptNamespace
         public enum LaserPositionEnum
         {
             Game8,
-            SuperJump
+            MMW
         }
 
         public void Init(ScriptAccessory accessory)
@@ -828,7 +828,7 @@ namespace KarlinScriptNamespace
                     var dvx = isEastYellowLaser ? 1 : -1;
                     dealPos += myIndex > 3 ? new(-2.9f * dvx, 0, 0) : new(2.9f * dvx, 0, 0);
                 }
-                if (LaserPosition==LaserPositionEnum.SuperJump)
+                if (LaserPosition==LaserPositionEnum.MMW)
                 {
                     var dvx = myIndex > 3 ? 1 : -1;
                     var isSourth = isYelowBuff[myIndex] != isSouthYellowLaser;
