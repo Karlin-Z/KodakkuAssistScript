@@ -14,13 +14,11 @@ using System.Linq;
 using ImGuiNET;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using KodakkuAssist.Module.GameOperate;
-using System.Security.Cryptography;
-using KodakkuAssist.Data;
 
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.5", author: "Karlin")]
+    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.6", author: "Karlin")]
     public class M1sDraw
     {
         [UserSetting("地板修复击退,Mt组安全半场")]
@@ -28,7 +26,7 @@ namespace KarlinScriptNamespace
 
         public enum KnockBackMtPosition
         {
-            NouthHalf,
+            NorthHalf,
             SouthHalf,
             EastHalf,
             WestHalf
@@ -979,9 +977,9 @@ namespace KarlinScriptNamespace
         {
             var myIndex = accessory.Data.PartyList.ToList().IndexOf(accessory.Data.Me);
 
-            if (MtSafeFloor == KnockBackMtPosition.SouthHalf || MtSafeFloor == KnockBackMtPosition.NouthHalf)
+            if (MtSafeFloor == KnockBackMtPosition.SouthHalf || MtSafeFloor == KnockBackMtPosition.NorthHalf)
             {
-                int[] northGroup = MtSafeFloor == KnockBackMtPosition.NouthHalf ? [0, 2, 4, 6] : [1, 3, 5, 7];
+                int[] northGroup = MtSafeFloor == KnockBackMtPosition.NorthHalf ? [0, 2, 4, 6] : [1, 3, 5, 7];
                 var isNorthGroup = northGroup.Contains(myIndex);
                 if (@event["Index"] == "00000001")
                 {
