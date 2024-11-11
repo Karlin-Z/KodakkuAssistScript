@@ -54,5 +54,12 @@
     "Version": "0.0.0.1",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%A4%9A%E5%8F%98%E8%BF%B7%E5%AE%AB%E8%87%AA%E5%8A%A8%E5%8C%96.cs"
+},
+{
+    "Name": "金碟小助手",
+    "Guid": "9eed3085-cb11-738a-7e06-5ba0aa67363c",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/00-Misc/%E9%87%91%E7%A2%9F%E5%B0%8F%E5%8A%A9%E6%89%8B.cs"
 }
 ]
