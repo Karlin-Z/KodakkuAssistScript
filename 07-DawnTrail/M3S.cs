@@ -21,7 +21,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.1", author: "Karlin")]
+    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.2", author: "Karlin")]
     public class M3s绘图绘图
     {
         [UserSetting("按照TNTN顺序安排撞线位置")]
@@ -97,7 +97,7 @@ namespace KarlinScriptNamespace
             //37851 月环分摊
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             var index = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
-            int[] group= [7, 4, 6, 5, 1, 3, 2, 0];
+            int[] group= [6, 5, 4, 7, 2, 1, 0, 3];
             DrawPropertiesEdit dp;
             if (@event["ActionId"] == "37848" || @event["ActionId"] == "37850")
             {
