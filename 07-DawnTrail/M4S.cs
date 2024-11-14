@@ -22,7 +22,7 @@ using System.Collections;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.5", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.6", author: "Karlin")]
     public class M4s绘图绘图
     {
         [UserSetting("奔雷炮站位方式")]
@@ -1665,7 +1665,7 @@ namespace KarlinScriptNamespace
                 var obj = accessory.Data.Objects.SearchByEntityId(towerId);
                 var rot = obj?.Rotation ?? 0;
                 var sourcepos = obj?.Position ?? default;
-                var dueFace = MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1;
+                var dueFace = MathF.Abs(MathF.Abs(rot) % (float.Pi / 2)) < 0.1;
                 var towerdir4 = PositionRoundTo4Dir(sourcepos, centre);
                 var atEast = ((towerdir4 == 0 || towerdir4 == 2) && !dueFace) || ((towerdir4 == 1 || towerdir4 == 3) && dueFace);
 
