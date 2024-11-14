@@ -27,8 +27,6 @@ namespace KarlinScriptNamespace
         [UserSetting("按照TNTN顺序安排撞线位置")]
         public bool TNTN_Fuse { get; set; } =false;
 
-        [UserSetting("P3场边冲拳 场中Aoe绘制方法")]
-        public P3AoeTypeEnum P3AoeType { get; set; }
 
         int? firstTargetIcon = null;
 
@@ -41,11 +39,6 @@ namespace KarlinScriptNamespace
         bool[] isLongFieldFuse = [false, false, false, false, false, false, false, false];
         int bommIndex = -1;
 
-        public enum P3AoeTypeEnum
-        {
-            DangerArea,
-            SafeArea
-        }
 
         public void Init(ScriptAccessory accessory)
         {
