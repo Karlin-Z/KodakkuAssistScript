@@ -21,12 +21,14 @@ using Dalamud.Game.ClientState.Objects.Types;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.2", author: "Karlin")]
+    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.3", author: "Karlin")]
     public class M3s绘图绘图
     {
         [UserSetting("按照TNTN顺序安排撞线位置")]
         public bool TNTN_Fuse { get; set; } =false;
 
+        [UserSetting("P3场边冲拳 场中Aoe绘制方法")]
+        public P3AoeTypeEnum P3AoeType { get; set; }
 
         int? firstTargetIcon = null;
 
@@ -39,6 +41,11 @@ namespace KarlinScriptNamespace
         bool[] isLongFieldFuse = [false, false, false, false, false, false, false, false];
         int bommIndex = -1;
 
+        public enum P3AoeTypeEnum
+        {
+            DangerArea,
+            SafeArea
+        }
 
         public void Init(ScriptAccessory accessory)
         {
@@ -407,14 +414,17 @@ namespace KarlinScriptNamespace
             if (pos4dir == 2) backPos = rightHand ? new(95, 0, 85) : new(105, 0, 85);
             if (pos4dir == 3) backPos = rightHand ? new(115, 0, 95) : new(115, 0, 105);
 
+
+            var dv = rightHand ? 1 : -1;
             var dp = accessory.Data.GetDefaultDrawProperties();
-            dp.Name = $"场边冲拳一段";
-            dp.Scale = new(20,30);
-            dp.Offset = rightHand ? new(5, 0, 0) : new(-5, 0, 0);
+            dp.Name = $"P3场边冲拳一段";
+            dp.Scale = pos4dir == chainObjPos4Dir ? new(10, 30) : new(20, 30);
+            dp.Offset = pos4dir == chainObjPos4Dir ? new(10 * -dv, 0, 0) : new(5 * dv, 0, 0);
             dp.Owner = sid;
-            dp.Color = pos4dir == chainObjPos4Dir ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
+            dp.Color = accessory.Data.DefaultDangerColor;
             dp.DestoryAt = 6100;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
+
 
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"场边冲拳二段";
@@ -686,7 +696,7 @@ namespace KarlinScriptNamespace
             if (@event["ActionId"] == "37898")
             {
                 var index = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
-                int[] group = [4, 5, 6, 7, 0, 1, 2, 3];
+                int[] group = [6, 5, 4, 7, 2, 1, 0, 3];
                 for (int i = 0; i < 4; i++)
                 {
                     dp = accessory.Data.GetDefaultDrawProperties();
@@ -737,14 +747,20 @@ namespace KarlinScriptNamespace
             if (pos4dir == 2) backPos = rightHand ? new(95, 0, 85) : new(105, 0, 85);
             if (pos4dir == 3) backPos = rightHand ? new(115, 0, 95) : new(115, 0, 105);
 
+
+            var dv = rightHand ? 1 : -1;
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"P3场边冲拳一段";
-            dp.Scale = new(20, 30);
-            dp.Offset = rightHand ? new(5, 0, 0) : new(-5, 0, 0);
+            dp.Scale = pos4dir == chainObjPos4Dir? new(10, 30) : new(20, 30);
+            dp.Offset = pos4dir == chainObjPos4Dir ? new(10*-dv, 0, 0) : new(5*dv, 0, 0);
             dp.Owner = sid;
-            dp.Color = pos4dir == chainObjPos4Dir ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
+            dp.Color = accessory.Data.DefaultDangerColor;
             dp.DestoryAt = 8100;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
+
+
+
+
 
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"P3场边冲拳二段";
@@ -812,7 +828,6 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "P3场边冲拳_场中扇形危险区", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:39895"])]
         public void P3场边冲拳_场中扇形危险区(Event @event, ScriptAccessory accessory)
         {
-
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"P3场边冲拳_场中扇形危险区";

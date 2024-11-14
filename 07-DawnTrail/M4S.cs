@@ -22,7 +22,7 @@ using System.Collections;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.3", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.4", author: "Karlin")]
     public class M4s绘图绘图
     {
         [UserSetting("奔雷炮站位方式")]
@@ -1611,7 +1611,7 @@ namespace KarlinScriptNamespace
             }
             else
             {
-                Task.Delay(15000).ContinueWith(t =>
+                Task.Delay(18000).ContinueWith(t =>
                 {
                     var obj = accessory.Data.Objects.SearchByEntityId(sid);
                     if (obj == null) return;
@@ -1633,7 +1633,7 @@ namespace KarlinScriptNamespace
                     dp.TargetPosition = dealpos;
                     dp.ScaleMode |= ScaleMode.YByDistance;
                     dp.Color = accessory.Data.DefaultSafeColor;
-                    dp.DestoryAt = 13000;
+                    dp.DestoryAt = 10000;
                     accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
 
                     dp = accessory.Data.GetDefaultDrawProperties();
