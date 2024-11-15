@@ -22,7 +22,7 @@ using System.Collections;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.7", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.8", author: "Karlin")]
     public class M4s绘图绘图
     {
         [UserSetting("奔雷炮站位方式")]
@@ -1060,6 +1060,7 @@ namespace KarlinScriptNamespace
         public void 接线爆炸重置(Event @event, ScriptAccessory accessory)
         {
             TetherBoom= [0, 0, 0, 0, 0, 0, 0, 0];
+            TetherLighting = [];
         }
         [ScriptMethod(name: "接线爆炸收集器", eventType: EventTypeEnum.ActionEffect, eventCondition: ["TargetIndex:1", "ActionId:regex:^(3843[12])$"], userControl: false)]
         public void 接线爆炸收集器(Event @event, ScriptAccessory accessory)
@@ -1459,12 +1460,13 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             lock (TetherLighting)
             {
+                //accessory.Log.Debug($"{TetherLighting.Count}");
                 TetherLighting.Add(sid);
                 var count = TetherLighting.Count;
                 if (count ==1 || count == 2 || count == 3) 
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"剑连线";
+                    dp.Name = $"剑连线1-1";
                     dp.Scale = new(7);
                     dp.Owner = sid;
                     dp.Color = accessory.Data.DefaultDangerColor;
@@ -1474,7 +1476,7 @@ namespace KarlinScriptNamespace
                 if (count == 4 || count == 5 || count == 6)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"剑连线";
+                    dp.Name = $"剑连线1-2";
                     dp.Scale = new(7);
                     dp.Owner = sid;
                     dp.Color = accessory.Data.DefaultDangerColor;
@@ -1484,7 +1486,7 @@ namespace KarlinScriptNamespace
                 if (count == 7 || count == 8 || count == 9)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"剑连线";
+                    dp.Name = $"剑连线2-1";
                     dp.Scale = new(7);
                     dp.Owner = sid;
                     dp.Color = accessory.Data.DefaultDangerColor;
@@ -1495,7 +1497,7 @@ namespace KarlinScriptNamespace
                 if (count == 10 || count == 11 || count == 12)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"剑连线";
+                    dp.Name = $"剑连线2-2";
                     dp.Scale = new(7);
                     dp.Owner = sid;
                     dp.Color = accessory.Data.DefaultDangerColor;
@@ -1506,7 +1508,7 @@ namespace KarlinScriptNamespace
                 if (count == 13 || count == 14 || count == 15)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"剑连线";
+                    dp.Name = $"剑连线3-1";
                     dp.Scale = new(7);
                     dp.Owner = sid;
                     dp.Color = accessory.Data.DefaultDangerColor;
@@ -1517,7 +1519,7 @@ namespace KarlinScriptNamespace
                 if (count == 16 || count == 17 || count == 18)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"剑连线";
+                    dp.Name = $"剑连线3-2";
                     dp.Scale = new(7);
                     dp.Owner = sid;
                     dp.Color = accessory.Data.DefaultDangerColor;
@@ -1528,7 +1530,7 @@ namespace KarlinScriptNamespace
                 if (count == 19 || count == 20 || count == 21)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"剑连线";
+                    dp.Name = $"剑连线4-1";
                     dp.Scale = new(7);
                     dp.Owner = sid;
                     dp.Color = accessory.Data.DefaultDangerColor;
@@ -1539,7 +1541,7 @@ namespace KarlinScriptNamespace
                 if (count == 22 || count == 23 || count == 24)
                 {
                     var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = $"剑连线";
+                    dp.Name = $"剑连线4-2";
                     dp.Scale = new(7);
                     dp.Owner = sid;
                     dp.Color = accessory.Data.DefaultDangerColor;
