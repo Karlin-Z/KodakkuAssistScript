@@ -22,7 +22,7 @@ using System.Collections;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.6", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.7", author: "Karlin")]
     public class M4s绘图绘图
     {
         [UserSetting("奔雷炮站位方式")]
@@ -1581,7 +1581,9 @@ namespace KarlinScriptNamespace
                 var rot = obj?.Rotation ?? 0;
 
                 var sourcepos = obj?.Position ?? default;
-                var dueFace = MathF.Abs(MathF.Abs(rot) % (float.Pi / 2)) < 0.1;
+                //%会有精度问题
+                var dueFace = MathF.Abs(rot)<0.1|| MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1 || MathF.Abs(MathF.Abs(rot) - float.Pi) < 0.1;
+                //accessory.Log.Debug($"rot{rot} {MathF.Abs(MathF.Abs(rot) % (float.Pi / 2))} dueFace {MathF.Abs(MathF.Abs(rot) % (float.Pi / 2))<0.1} {dueFace}");
                 var dir4 = PositionRoundTo4Dir(sourcepos, new(100, 0, 165));
                 var atEast = ((dir4 == 0 || dir4 == 2) && !dueFace) || ((dir4 == 1 || dir4 == 3) && dueFace);
 
@@ -1617,7 +1619,7 @@ namespace KarlinScriptNamespace
                     if (obj == null) return;
                     var rot = obj?.Rotation ?? 0;
                     var sourcepos = obj?.Position ?? default;
-                    var dueFace = MathF.Abs(MathF.Abs(rot) % (float.Pi / 2)) < 0.1;
+                    var dueFace = MathF.Abs(rot) < 0.1 || MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1 || MathF.Abs(MathF.Abs(rot) - float.Pi) < 0.1;
                     var dir4 = PositionRoundTo4Dir(sourcepos, new(100, 0, 165));
                     var atEast = ((dir4 == 0 || dir4 == 2) && !dueFace) || ((dir4 == 1 || dir4 == 3) && dueFace);
 
@@ -1665,7 +1667,7 @@ namespace KarlinScriptNamespace
                 var obj = accessory.Data.Objects.SearchByEntityId(towerId);
                 var rot = obj?.Rotation ?? 0;
                 var sourcepos = obj?.Position ?? default;
-                var dueFace = MathF.Abs(MathF.Abs(rot) % (float.Pi / 2)) < 0.1;
+                var dueFace = MathF.Abs(rot) < 0.1 || MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1 || MathF.Abs(MathF.Abs(rot) - float.Pi) < 0.1;
                 var towerdir4 = PositionRoundTo4Dir(sourcepos, centre);
                 var atEast = ((towerdir4 == 0 || towerdir4 == 2) && !dueFace) || ((towerdir4 == 1 || towerdir4 == 3) && dueFace);
 
