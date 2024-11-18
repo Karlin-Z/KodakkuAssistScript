@@ -19,15 +19,17 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.ComponentModel;
 using System.DirectoryServices.ActiveDirectory;
 using System.Collections;
+using System.Text;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.8", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.10", author: "Karlin")]
     public class M4s绘图绘图
     {
         [UserSetting("奔雷炮站位方式")]
         public LaserPositionEnum LaserPosition { get; set; }
-
+        [UserSetting("Debug模式")]
+        public bool DebugMode { get; set; }=true;
 
         int? firstTargetIcon = null;
         int parse;
@@ -692,53 +694,70 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "Buff3999计数器", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:3999"],userControl:false)]
         public void Buff3999计数器(Event @event, ScriptAccessory accessory)
         {
-            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
-            if (!int.TryParse(@event["DurationMilliseconds"], out var dur)) return;
-            var index = accessory.Data.PartyList.IndexOf(tid);
-            if (index == -1) return;
-            long3999[index] = dur > 30000;
+            lock (this)
+            {
+                if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+                if (!int.TryParse(@event["DurationMilliseconds"], out var dur)) return;
+                var index = accessory.Data.PartyList.IndexOf(tid);
+                if (index == -1) return;
+                long3999[index] = dur > 30000;
+            }
+            
 
         }
+
         [ScriptMethod(name: "地板分散位置", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:38351"])]
         public void 地板分散位置(Event @event, ScriptAccessory accessory)
         {
-            var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
-            var centre = new Vector3(100, 0, 100);
-            if (MathF.Abs((pos - centre).Length() - 16) > 1) return;
-
-            floorSpreadCount++;
-            var dir4 = PositionRoundTo4Dir(pos, centre);
-            var rot = 0 + float.Pi / 2 * dir4;
-            var myIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
-            
-
-            var meIsSmall = (long3999[myIndex] & lightingCounts[myIndex] == 1) || (!long3999[myIndex] & lightingCounts[myIndex] == 2);
-
-            var dealPos=new Vector3();
-            if (meIsSmall)
+            lock (this)
             {
-                dealPos = myIndex > 3 ? new(116, 0, 108) : new(84, 0, 108);
+                var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+                var centre = new Vector3(100, 0, 100);
+                if (MathF.Abs((pos - centre).Length() - 16) > 1) return;
+
+                floorSpreadCount++;
+                
+                var dir4 = PositionRoundTo4Dir(pos, centre);
+                var rot = 0 + float.Pi / 2 * dir4;
+                var myIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+                
+
+                var meIsSmall = (long3999[myIndex] & lightingCounts[myIndex] == 1) || (!long3999[myIndex] & lightingCounts[myIndex] == 2);
+
+                StringBuilder sb = new();
+                for (int i = 0; i < 8; i++)
+                {
+                    sb.Append(long3999[i] ? "1" : "0");
+                }
+                if (DebugMode)
+                    accessory.Method.SendChat($"/e 二雷 第{floorSpreadCount}轮 北{dir4} Me[{myIndex}号|{(long3999[myIndex]?"长":"短")}|{lightingCounts[myIndex]}次|{(meIsSmall ? "小" : "大")}] Buff[{sb}]");
+
+                var dealPos = new Vector3();
+                if (meIsSmall)
+                {
+                    dealPos = myIndex > 3 ? new(116, 0, 108) : new(84, 0, 108);
+                }
+                else
+                {
+                    dealPos = myIndex > 3 ? new(116, 0, 84) : new(84, 0, 84);
+                }
+
+                if (long3999[myIndex] && floorSpreadCount == 1) dealPos = new(100, 0, 116);
+                if (!long3999[myIndex] && floorSpreadCount != 1) dealPos = new(100, 0, 116);
+
+                dealPos = RotatePoint(dealPos, centre, rot);
+
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "地板分散位置";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealPos;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 7000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
             }
-            else
-            {
-                dealPos = myIndex > 3 ? new(116, 0, 84) : new(84, 0, 84);
-            }
-
-            if (long3999[myIndex] && floorSpreadCount == 1) dealPos = new(100, 0, 116);
-            if (!long3999[myIndex] && floorSpreadCount != 1) dealPos = new(100, 0, 116);
-
-            dealPos = RotatePoint(dealPos, centre, rot);
-
-            var dp = accessory.Data.GetDefaultDrawProperties();
-            dp.Name = "地板分散位置";
-            dp.Scale = new(2);
-            dp.Owner = accessory.Data.Me;
-            dp.TargetPosition = dealPos;
-            dp.ScaleMode |= ScaleMode.YByDistance;
-            dp.Color = accessory.Data.DefaultSafeColor;
-            dp.DestoryAt = 7000;
-            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
-
         }
 
 
@@ -1553,6 +1572,58 @@ namespace KarlinScriptNamespace
             
         }
 
+        [ScriptMethod(name: "剑舞范围", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(3839[345])$"])]
+        public void 剑舞范围(Event @event, ScriptAccessory accessory)
+        {
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            var dz = @event["ActionId"] switch
+            {
+                "38393" => -10,
+                "38394" => 0,
+                "38395" => 10,
+                _ => 0
+            };
+
+            var dur = 14000;
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "剑舞范围-1";
+            dp.Scale = new(12, 60);
+            dp.Position = new(100, 0, 165);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = dur;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "剑舞范围-2";
+            dp.Scale = new(12, 60);
+            dp.Position = new(100, 0, 165);
+            dp.Rotation = float.Pi / 3;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = dur;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "剑舞范围-3";
+            dp.Scale = new(12, 60);
+            dp.Position = new(100, 0, 165);
+            dp.Rotation = float.Pi / -3;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = dur;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "剑舞范围-4";
+            dp.Scale = new(12, 60);
+            dp.Position = new(100, 0, 165+dz);
+            dp.Rotation = float.Pi / 2;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = dur;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Straight, dp);
+
+
+        }
+
         //0 10000
         //18000 10000
         [ScriptMethod(name: "分身双人塔Id记录", eventType: EventTypeEnum.PlayActionTimeline, eventCondition: ["Id:4565"],userControl:false)]
@@ -1585,10 +1656,12 @@ namespace KarlinScriptNamespace
                 var sourcepos = obj?.Position ?? default;
                 //%会有精度问题
                 var dueFace = MathF.Abs(rot)<0.1|| MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1 || MathF.Abs(MathF.Abs(rot) - float.Pi) < 0.1;
+                
                 //accessory.Log.Debug($"rot{rot} {MathF.Abs(MathF.Abs(rot) % (float.Pi / 2))} dueFace {MathF.Abs(MathF.Abs(rot) % (float.Pi / 2))<0.1} {dueFace}");
                 var dir4 = PositionRoundTo4Dir(sourcepos, new(100, 0, 165));
                 var atEast = ((dir4 == 0 || dir4 == 2) && !dueFace) || ((dir4 == 1 || dir4 == 3) && dueFace);
-
+                if(DebugMode)
+                    accessory.Method.SendChat($"/e 日出1 {(dueFace ? "正" : "斜")}-{(atEast ? "东西" : "南北")} [{rot:f2}|{sourcepos.X:F2},{sourcepos.Z:F2}]");
                 Vector3 dealpos = default;
                 if (myIndex < 4) dealpos = atEast ? new(85, 0, 165) : new(100, 0, 180);
                 else dealpos = atEast ? new(115, 0, 165) : new(100, 0, 150);
@@ -1624,7 +1697,8 @@ namespace KarlinScriptNamespace
                     var dueFace = MathF.Abs(rot) < 0.1 || MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1 || MathF.Abs(MathF.Abs(rot) - float.Pi) < 0.1;
                     var dir4 = PositionRoundTo4Dir(sourcepos, new(100, 0, 165));
                     var atEast = ((dir4 == 0 || dir4 == 2) && !dueFace) || ((dir4 == 1 || dir4 == 3) && dueFace);
-
+                    if (DebugMode)
+                        accessory.Method.SendChat($"/e 日出2 {(dueFace ? "正" : "斜")}-{(atEast ? "东西" : "南北")} [{rot:f2}|{sourcepos.X:F2},{sourcepos.Z:F2}]");
                     Vector3 dealpos = default;
                     if (myIndex < 4) dealpos = atEast ? new(85, 0, 165) : new(100, 0, 180);
                     else dealpos = atEast ? new(115, 0, 165) : new(100, 0, 150);
@@ -1672,7 +1746,8 @@ namespace KarlinScriptNamespace
                 var dueFace = MathF.Abs(rot) < 0.1 || MathF.Abs(MathF.Abs(rot) - (float.Pi / 2)) < 0.1 || MathF.Abs(MathF.Abs(rot) - float.Pi) < 0.1;
                 var towerdir4 = PositionRoundTo4Dir(sourcepos, centre);
                 var atEast = ((towerdir4 == 0 || towerdir4 == 2) && !dueFace) || ((towerdir4 == 1 || towerdir4 == 3) && dueFace);
-
+                if (DebugMode)
+                    accessory.Method.SendChat($"/e 日出3 {(dueFace ? "正" : "斜")}-{(atEast ? "东西" : "南北")} [{rot:f2}|{sourcepos.X:F2},{sourcepos.Z:F2}]");
                 //{"X":110.58,"Y":-0.00,"Z":154.38}
                 var myPosIndex = 0;
                 if(isYelowBuff[myIndex]) myPosIndex=myIndex>3? isYellowGun.IndexOf(false) : isYellowGun.LastIndexOf(false);

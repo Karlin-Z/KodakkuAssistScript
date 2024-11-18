@@ -21,11 +21,14 @@ using Dalamud.Game.ClientState.Objects.Types;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.3", author: "Karlin")]
+    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.4", author: "Karlin")]
     public class M3s绘图绘图
     {
         [UserSetting("按照TNTN顺序安排撞线位置")]
         public bool TNTN_Fuse { get; set; } =false;
+
+        [UserSetting("P2地面炸弹分散方式")]
+        public P2BoobDealEnum P2BoobDealType { get; set; }
 
 
         int? firstTargetIcon = null;
@@ -39,7 +42,11 @@ namespace KarlinScriptNamespace
         bool[] isLongFieldFuse = [false, false, false, false, false, false, false, false];
         int bommIndex = -1;
 
-
+        public enum P2BoobDealEnum
+        {
+            Hector,
+            MMW
+        }
         public void Init(ScriptAccessory accessory)
         {
             firstTargetIcon = null;
@@ -57,7 +64,23 @@ namespace KarlinScriptNamespace
             chargeSafePos = default;
         }
 
+        [ScriptMethod(name: "Aoe提醒", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(37925)$"])]
+        public void Aoe提醒(Event @event, ScriptAccessory accessory)
+        {
 
+            
+            var count = parse switch
+            {
+                0=>4,
+                1=>6,
+                2=>8,
+                _=>4
+            };
+            accessory.Method.TextInfo($"{count}连AOE", 4000 + count * 1100);
+            accessory.Method.TTS($"{count}连AOE");
+
+
+        }
         [ScriptMethod(name: "分摊死刑", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(37923)$"])]
         public void 分摊死刑(Event @event, ScriptAccessory accessory)
         {
@@ -177,7 +200,7 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             DrawPropertiesEdit dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"击退+分摊分散-击退";
-            dp.Scale = new(2, 20);
+            dp.Scale = new(2, 25);
             dp.Color = accessory.Data.DefaultSafeColor.WithW(3);
             dp.Owner = accessory.Data.Me;
             dp.TargetObject = sid;
@@ -484,7 +507,7 @@ namespace KarlinScriptNamespace
         public void 引线收集(Event @event, ScriptAccessory accessory)
         {
             if (!ParseObjectId(@event["TargetId"], out var tid)) return;
-            isLongFuse[accessory.Data.PartyList.IndexOf(tid)] = @event["StatusID"] == "4024";
+            isLongFuse[accessory.Data.PartyList.IndexOf(tid)] = @event["StatusID"] == "4025";
         }
 
         [ScriptMethod(name: "玩家引线提示", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:^(402[45])$"])]
@@ -539,6 +562,116 @@ namespace KarlinScriptNamespace
             dp.Delay = statusCount>0 ? shorDelay : 0;
             dp.DestoryAt = statusCount > 0 ? dur : shorDelay;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+        }
+
+        [ScriptMethod(name: "P2地面炸弹处理位置", eventType: EventTypeEnum.SetObjPos, eventCondition: ["SourceDataId:17095"])]
+        public void P2地面炸弹处理位置(Event @event, ScriptAccessory accessory)
+        {
+
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            var obj = accessory.Data.Objects.SearchByEntityId(sid);
+            if (obj == null) return;
+            var statusCount = ((IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+
+            var dur = 5000;
+            var shorDelay = parse == 1 ? 12000 : 19000;
+            var longDelay = parse == 1 ? 17000 : 24000;
+
+            if (parse != 1) return;
+            // 场地分布只有两种情况，检查A点炸弹是否为长
+            var bomb_A = new Vector3(100f, 0, 92.05f);
+            if (MathF.Abs((pos - bomb_A).Length()) >0.5) return;
+            var bomb_A_isShort = statusCount == 0;
+            var MyIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            Vector3 destinationPos = default;
+            if (P2BoobDealType == P2BoobDealEnum.Hector)
+            {
+                // accessory.Log.Debug($"找到了A点的炸弹，对应的位置为{pos}");
+                // accessory.Log.Debug($"检测到A点炸弹为【{(bomb_A_isShort? "短" : "长")}】");
+                // accessory.Log.Debug($"小队列表，isLongFuse: {string.Join(", ", isLongFuse)}");
+                // accessory.Log.Debug($"我: {MyIndex}");
+
+                if (MyIndex == 0 || MyIndex == 4)
+                {
+                    // 判断目标位置是否在A点
+                    //     bomb_A_isShort      isLongFuse       goToA
+                    //          1                   1             1
+                    //          1                   0             0
+                    //          0                   1             0
+                    //          0                   0             1
+                    bool goToA = !(bomb_A_isShort ^ isLongFuse[MyIndex]);
+                    destinationPos = goToA ? new(100f, 0, 92.05f) : new(92.05f, 0, 100f);
+                }
+                else if (MyIndex == 1 || MyIndex == 5)
+                {
+                    bool goToA = !(bomb_A_isShort ^ isLongFuse[MyIndex]);
+                    destinationPos = goToA ? new(107.95f, 0, 100f) : new(100f, 0, 107.95f);
+                }
+
+                else if (MyIndex == 2 || MyIndex == 6)
+                {
+                    // 我是长线，左上1必是短炸弹，则需在第二轮去1
+                    // 我是短线，左上1必是短炸弹，则需在第一轮去2
+                    destinationPos = isLongFuse[MyIndex] ? new(90.6f, 0, 90.6f) : new(109.4f, 0, 90.6f);
+                }
+                else if (MyIndex == 3 || MyIndex == 7)
+                {
+                    // 我是长线，右下3必是短炸弹，则需在第二轮去3
+                    // 我是短线，右下3必是短炸弹，则需在第一轮去4
+                    destinationPos = isLongFuse[MyIndex] ? new(109.4f, 0, 109.4f) : new(90.6f, 0, 109.4f);
+                }
+
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "指路零式炸弹位置";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = destinationPos;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = isLongFuse[MyIndex] ? shorDelay : 0;
+                dp.DestoryAt = isLongFuse[MyIndex] ? dur : shorDelay;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+            if (P2BoobDealType == P2BoobDealEnum.MMW)
+            {
+                //西南三个长
+                var p1 = new Vector3(100f, 0, 110f);
+                var p2 = new Vector3(90, 0, 100);
+                var p3 = new Vector3(114.5f, 0, 94f);
+                var p4 = new Vector3(107f, 0, 85.5f); 
+
+                var p5 = new Vector3(107f, 0, 103.5f);
+                var p6 = new Vector3(96.5f, 0, 93f);
+                var p7 = new Vector3(87f, 0, 87f);
+                var p8 = new Vector3(113f, 0, 113f);
+
+                destinationPos = MyIndex switch
+                {
+                    0 => isLongFuse[MyIndex] ? p5 : p1,
+                    1 => isLongFuse[MyIndex] ? p6 : p2,
+                    2 => isLongFuse[MyIndex] ? p7 : p3,
+                    3 => isLongFuse[MyIndex] ? p8 : p4,
+                    4 => isLongFuse[MyIndex] ? p5 : p1,
+                    5 => isLongFuse[MyIndex] ? p6 : p2,
+                    6 => isLongFuse[MyIndex] ? p7 : p3,
+                    7 => isLongFuse[MyIndex] ? p8 : p4,
+                    _=>default,
+                } ;
+                accessory.Log.Debug($"{destinationPos.X:f2} {destinationPos.Z:f2}");
+                if (destinationPos == default) return;
+                destinationPos = bomb_A_isShort ? destinationPos: RotatePoint(destinationPos, new(100, 0, 100), float.Pi);
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "指路零式炸弹位置";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = destinationPos;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = isLongFuse[MyIndex] ? shorDelay : 0;
+                dp.DestoryAt = isLongFuse[MyIndex] ? dur : shorDelay;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
         }
 
         [ScriptMethod(name: "玩家长短爆炸buff收集", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:4020"], userControl: false)]
