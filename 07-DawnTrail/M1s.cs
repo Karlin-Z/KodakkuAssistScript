@@ -18,11 +18,14 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.6", author: "Karlin")]
+    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.7", author: "Karlin")]
     public class M1sDraw
     {
         [UserSetting("地板修复击退,Mt组安全半场")]
         public KnockBackMtPosition MtSafeFloor { get; set; }
+
+        [UserSetting("分身跳跃预测颜色")]
+        public ScriptColor jumpColor { get; set; } = new() { V4 = new(1, 1, 0, 1) };
 
         public enum KnockBackMtPosition
         {
@@ -602,7 +605,158 @@ namespace KarlinScriptNamespace
             });
         }
 
+        [ScriptMethod(name: "P3分身面向", eventType: EventTypeEnum.Tether, eventCondition: ["Id:0066"])]
+        public void P3分身面向(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 3) return;
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            Task.Delay(100).ContinueWith((t) =>
+            {
+                //38959 右扇
+                //37975 左扇
+                //37965 左跳右刀
+                //37966 左跳左刀
+                //37967 右跳右刀
+                //37968 右跳左刀
+                if (P3TetherTarget.Count > 2) return;
+                var skillId = P3JumpSkill[P3TetherTarget.IndexOf(sid)];
+                var leftJump = (skillId == "37965" || skillId == "37966" || skillId == "37975");
 
+                var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+                var isNouthCopy = Math.Abs(pos.Z - 95) < 1;
+                Vector3 dv = new(0, 0, 0);
+                if (isNouthCopy)
+                {
+                    dv = leftJump ? new(10, 0, 0) : new(-10, 0, 0);
+                }
+                else
+                {
+                    dv = leftJump ? new(-10, 0, 0) : new(10, 0, 0);
+                }
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"P3分身面向";
+                dp.Scale = new(4.9f, 5f);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Position = pos + dv;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.FixRotation = true;
+                dp.Rotation = isNouthCopy ? 0 : float.Pi;
+                dp.Delay = 40000;
+                dp.DestoryAt = 50000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+            });
+        }
+
+        [ScriptMethod(name: "P3拉怪辅助", eventType: EventTypeEnum.Tether, eventCondition: ["Id:0066"])]
+        public void P3拉怪辅助(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 3) return;
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            Task.Delay(100).ContinueWith((t) =>
+            {
+                //38959 右扇
+                //37975 左扇
+                //37965 左跳右刀
+                //37966 左跳左刀
+                //37967 右跳右刀
+                //37968 右跳左刀
+
+                if (P3TetherTarget.Count == 2)
+                {
+                    var skillId1 = P3JumpSkill[0];
+                    var skillId2 = P3JumpSkill[1];
+                    var leftJump1 = (skillId1 == "37965" || skillId1 == "37966" || skillId1 == "37975");
+                    var leftJump2 = (skillId2 == "37965" || skillId2 == "37966" || skillId2 == "37975");
+
+                    var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+                    var isNouthCopy1 = Math.Abs(pos.Z - 95) < 1;
+                    var epos = new Vector3(100, 0, 100);
+                    if (leftJump1 != leftJump2) 
+                    {
+                        if (isNouthCopy1)
+                        {
+                            epos = leftJump2 ? new(110, 0, 100) : new(90, 0, 100);
+                        }
+                        else
+                        {
+                            epos = leftJump2 ? new(90, 0, 100) : new(110, 0, 100);
+                        }
+                    }
+
+                    
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"P3拉怪辅助起始";
+                    dp.Scale = new(2, 10);
+                    dp.Color = jumpColor.V4;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = epos;
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Delay = 0;
+                    dp.DestoryAt = 13000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                }
+
+
+                //一跳
+                if (P3TetherTarget.Count == 3)
+                {
+                    var jump1 = P3TetherTarget.IndexOf(sid);
+                    var jump2 = jump1 == 0 ? 1 : 0;
+                    var skillId1 = P3JumpSkill[jump1];
+                    var skillId2 = P3JumpSkill[jump2];
+                    var leftJump1 = (skillId1 == "37965" || skillId1 == "37966" || skillId1 == "37975");
+                    var leftJump2 = (skillId2 == "37965" || skillId2 == "37966" || skillId2 == "37975");
+
+                    var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+                    var pos2=new Vector3(pos.X,pos.Y,100-(pos.Z-100));
+                    var isNouthCopy1 = Math.Abs(pos.Z - 95) < 1;
+
+                    Vector3 dv1 = new(0, 0, 0);
+                    if (isNouthCopy1)
+                    {
+                        dv1 = leftJump1 ? new(10, 0, 0) : new(-10, 0, 0);
+                    }
+                    else
+                    {
+                        dv1 = leftJump1 ? new(-10, 0, 0) : new(10, 0, 0);
+                    }
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"P3拉怪辅助1";
+                    dp.Scale = new(2, 10);
+                    dp.Color = jumpColor.V4;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = pos + dv1;
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Delay = 0;
+                    dp.DestoryAt = 17000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                    Vector3 dv2 = new(0, 0, 0);
+                    if (isNouthCopy1)
+                    {
+                        dv2 = leftJump2 ? new(-10, 0, 0) : new(10, 0, 0);
+                    }
+                    else
+                    {
+                        dv2 = leftJump2 ? new(10, 0, 0) : new(-10, 0, 0);
+                       
+                    }
+                    dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"P3拉怪辅助2";
+                    dp.Scale = new(2, 10);
+                    dp.Color = jumpColor.V4;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = pos2 + dv2;
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Delay = 27000;
+                    dp.DestoryAt = 20000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                }
+                
+
+            });
+        }
 
         [ScriptMethod(name: "双人分摊", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(37982|38016)$"])]
         public void 双人分摊(Event @event, ScriptAccessory accessory)
