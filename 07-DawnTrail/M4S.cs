@@ -23,7 +23,7 @@ using System.Text;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.10", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.11", author: "Karlin")]
     public class M4s绘图绘图
     {
         [UserSetting("奔雷炮站位方式")]
@@ -1661,7 +1661,7 @@ namespace KarlinScriptNamespace
                 var dir4 = PositionRoundTo4Dir(sourcepos, new(100, 0, 165));
                 var atEast = ((dir4 == 0 || dir4 == 2) && !dueFace) || ((dir4 == 1 || dir4 == 3) && dueFace);
                 if(DebugMode)
-                    accessory.Method.SendChat($"/e 日出1 {(dueFace ? "正" : "斜")}-{(atEast ? "东西" : "南北")} [{rot:f2}|{sourcepos.X:F2},{sourcepos.Z:F2}]");
+                    accessory.Method.SendChat($"/e 日出1 Me{myIndex} {(dueFace ? "正" : "斜")}-{(atEast ? "东西" : "南北")} [{rot:f2}|{sourcepos.X:F2},{sourcepos.Z:F2}]");
                 Vector3 dealpos = default;
                 if (myIndex < 4) dealpos = atEast ? new(85, 0, 165) : new(100, 0, 180);
                 else dealpos = atEast ? new(115, 0, 165) : new(100, 0, 150);
@@ -1747,7 +1747,7 @@ namespace KarlinScriptNamespace
                 var towerdir4 = PositionRoundTo4Dir(sourcepos, centre);
                 var atEast = ((towerdir4 == 0 || towerdir4 == 2) && !dueFace) || ((towerdir4 == 1 || towerdir4 == 3) && dueFace);
                 if (DebugMode)
-                    accessory.Method.SendChat($"/e 日出3 {(dueFace ? "正" : "斜")}-{(atEast ? "东西" : "南北")} [{rot:f2}|{sourcepos.X:F2},{sourcepos.Z:F2}]");
+                    accessory.Method.SendChat($"/e 日出3 Me{myIndex} {(dueFace ? "正" : "斜")}-{(atEast ? "东西" : "南北")} [{rot:f2}|{sourcepos.X:F2},{sourcepos.Z:F2}]");
                 //{"X":110.58,"Y":-0.00,"Z":154.38}
                 var myPosIndex = 0;
                 if(isYelowBuff[myIndex]) myPosIndex=myIndex>3? isYellowGun.IndexOf(false) : isYellowGun.LastIndexOf(false);
