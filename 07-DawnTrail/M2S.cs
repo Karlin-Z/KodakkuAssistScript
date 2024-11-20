@@ -19,7 +19,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M2s绘图", territorys:[1228],guid: "d99c7e91-9b56-432d-a3a8-49a8586915b7e2a", version:"0.0.0.1", author: "Karlin")]
+    [ScriptType(name: "M2s绘图", territorys:[1228],guid: "d99c7e91-9b56-432d-a3a8-49a8586915b7e2a", version:"0.0.0.2", author: "Karlin")]
     public class M2s绘图绘图
     {
         [UserSetting("地面爱心轨迹长度")]
@@ -449,7 +449,7 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "直播2放圈收集", eventType: EventTypeEnum.TargetIcon, userControl: false)]
         public void 直播2放圈收集(Event @event, ScriptAccessory accessory)
         {
-            if (ParsTargetIcon(@event["Id"]) != 44) return;
+            if (ParsTargetIcon(@event["Id"]) != 44 && ParsTargetIcon(@event["Id"]) != 256) return;
             if (!ParseObjectId(@event["TargetId"], out var tid)) return;
             if (tid == accessory.Data.Me)
             {
@@ -459,7 +459,7 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "直播2放圈提示", eventType: EventTypeEnum.TargetIcon)]
         public void 直播2放圈提示(Event @event, ScriptAccessory accessory)
         {
-            if (ParsTargetIcon(@event["Id"]) != 44) return;
+            if (ParsTargetIcon(@event["Id"]) != 44 && ParsTargetIcon(@event["Id"]) != 256) return;
             if (!ParseObjectId(@event["TargetId"], out var tid)) return;
             if (tid==accessory.Data.Me)
             {

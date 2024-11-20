@@ -10,9 +10,10 @@
 {
     "Name": "M2s绘图",
     "Guid": "d99c7e91-9b56-432d-a3a8-49a8586915b7e2a",
-    "Version": "0.0.0.1",
+    "Version": "0.0.0.2",
     "Author": "Karlin",
-    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M2S.cs"
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M2S.cs",
+    "UpdateInfo":"1. 修复第二次直播放圈仍提示踩塔"
 },
 {
     "Name": "M3s绘图",
