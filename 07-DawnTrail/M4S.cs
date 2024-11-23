@@ -23,7 +23,7 @@ using System.Text;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.11", author: "Karlin")]
+    [ScriptType(name: "M4s绘图", territorys:[1232],guid: "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2", version:"0.0.0.12", author: "Karlin")]
     public class M4s绘图绘图
     {
         [UserSetting("奔雷炮站位方式")]
@@ -851,7 +851,7 @@ namespace KarlinScriptNamespace
                 {
                     var dvx = myIndex > 3 ? 1 : -1;
                     var isSourth = isYelowBuff[myIndex] != isSouthYellowLaser;
-                    dealPos += isSourth ? new(-2.9f * dvx, 0, 0) : new(2.9f * dvx, 0, 0);
+                    dealPos += isSourth ? new(2.9f * dvx, 0, 0) : new(-2.9f * dvx, 0, 0);
                 }
                 
             }
