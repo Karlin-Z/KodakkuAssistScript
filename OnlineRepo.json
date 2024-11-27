@@ -55,9 +55,11 @@
 {
     "Name": "绝伊甸绘图",
     "Guid": "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a",
-    "Version": "0.0.0.1",
+    "Version": "0.0.0.2",
     "Author": "Karlin",
-    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E7%BB%9D%E4%BC%8A%E7%94%B8.cs"
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E7%BB%9D%E4%BC%8A%E7%94%B8.cs",
+    "UpdateInfo": "1. 修复万变水波234不准"
+    
 },
 {
     "Name": "多变迷宫自动化",

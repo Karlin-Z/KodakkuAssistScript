@@ -14,7 +14,7 @@ using System.Linq;
 namespace MyScriptNamespace
 {
     
-    [ScriptType(name: "EdenUltimate", territorys: [1238],guid: "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a", version:"0.0.0.1",note: noteStr)]
+    [ScriptType(name: "EdenUltimate", territorys: [1238],guid: "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a", version:"0.0.0.2",note: noteStr)]
     public class EdenUltimate
     {
         const string noteStr =
@@ -83,6 +83,7 @@ namespace MyScriptNamespace
         [ScriptMethod(name: "P1_八方雷火_后续扇形", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:regex:^(40145)$", "TargetIndex:1"])]
         public void P1_八方雷火_后续扇形(Event @event, ScriptAccessory accessory)
         {
+            var dur = 2000;
             if (parse != 1) return;
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             if (!float.TryParse(@event["SourceRotation"], out var rot)) return;
@@ -94,7 +95,7 @@ namespace MyScriptNamespace
             dp.Radian = float.Pi / 8;
             dp.Owner = sid;
             dp.Color = accessory.Data.DefaultDangerColor;
-            dp.DestoryAt = 2000;
+            dp.DestoryAt = dur;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
             dp = accessory.Data.GetDefaultDrawProperties();
@@ -102,23 +103,23 @@ namespace MyScriptNamespace
             dp.Scale = new(60);
             dp.Radian = float.Pi / 8;
             dp.FixRotation = true;
-            dp.Rotation = rot+ float.Pi / 8;
+            dp.Rotation = rot + float.Pi / -8;
             dp.Owner = sid;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Delay = 2000;
-            dp.DestoryAt = 2000;
+            dp.DestoryAt = dur;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P1_八方雷火_后续扇形3";
             dp.Scale = new(60);
             dp.FixRotation = true;
-            dp.Rotation = rot + float.Pi / 4;
+            dp.Rotation = rot + float.Pi / -4;
             dp.Radian = float.Pi / 8;
             dp.Owner = sid;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Delay = 4000;
-            dp.DestoryAt = 2000;
+            dp.DestoryAt = dur;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
         }
