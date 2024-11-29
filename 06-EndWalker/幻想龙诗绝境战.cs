@@ -17,7 +17,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name:"绝龙诗绘图", territorys: [968], guid: "d9c97e91-9b59-432d-a3a1-42a8475b7e2a", version:"0.0.0.3")]
+    [ScriptType(name:"绝龙诗绘图", territorys: [968], guid: "d9c97e91-9b59-432d-a3a1-42a8475b7e2a", version:"0.0.0.4", author: "Karlin")]
     public class DragongSingDraw
     {
         
@@ -814,22 +814,38 @@ namespace KarlinScriptNamespace
 
                 g1Mem.Add(p2Jump.Item1);
                 g2Mem.Add(p2Jump.Item2);
-                if (g1Mem.IndexOf(0) == -1 && g2Mem.IndexOf(0) == -1) g2Mem.Add(0);
-                if (g1Mem.IndexOf(1) == -1 && g2Mem.IndexOf(1) == -1) g1Mem.Add(1);
-                if (g1Mem.IndexOf(2) == -1 && g2Mem.IndexOf(2) == -1) g2Mem.Add(2);
-                if (g1Mem.IndexOf(3) == -1 && g2Mem.IndexOf(3) == -1) g1Mem.Add(3);
-                if (g1Mem.IndexOf(6) == -1 && g2Mem.IndexOf(6) == -1) g2Mem.Add(6);
-                if (g1Mem.IndexOf(7) == -1 && g2Mem.IndexOf(7) == -1) g1Mem.Add(7);
-                if (g1Mem.IndexOf(4) == -1 && g1Mem.IndexOf(4) == -1)
+                if (p2Jump.Item1 != 0 && p2Jump.Item2 != 0) g2Mem.Add(0);
+                if (p2Jump.Item1 != 2 && p2Jump.Item2 != 2) g2Mem.Add(2);
+                if (p2Jump.Item1 != 6 && p2Jump.Item2 != 6) g2Mem.Add(6);
+                if (p2Jump.Item1 != 1 && p2Jump.Item2 != 1) g1Mem.Add(1);
+                if (p2Jump.Item1 != 3 && p2Jump.Item2 != 3) g1Mem.Add(3);
+                if (p2Jump.Item1 != 7 && p2Jump.Item2 != 7) g1Mem.Add(7);
+                if (p2Jump.Item1 != 4 && p2Jump.Item2 != 4)
                 {
                     if (g2Mem.Count == 3) g2Mem.Add(4);
                     else g1Mem.Add(4);
                 }
-                if (g1Mem.IndexOf(5) == -1 && g1Mem.IndexOf(5) == -1)
+                if (p2Jump.Item1 != 5 && p2Jump.Item2 != 5)
                 {
-                    if (g1Mem.Count == 3) g1Mem.Add(4);
-                    else g2Mem.Add(4);
+                    if (g1Mem.Count == 3) g1Mem.Add(5);
+                    else g2Mem.Add(5);
                 }
+                //if (g1Mem.IndexOf(0) == -1 && g2Mem.IndexOf(0) == -1) g2Mem.Add(0);
+                //if (g1Mem.IndexOf(1) == -1 && g2Mem.IndexOf(1) == -1) g1Mem.Add(1);
+                //if (g1Mem.IndexOf(2) == -1 && g2Mem.IndexOf(2) == -1) g2Mem.Add(2);
+                //if (g1Mem.IndexOf(3) == -1 && g2Mem.IndexOf(3) == -1) g1Mem.Add(3);
+                //if (g1Mem.IndexOf(6) == -1 && g2Mem.IndexOf(6) == -1) g2Mem.Add(6);
+                //if (g1Mem.IndexOf(7) == -1 && g2Mem.IndexOf(7) == -1) g1Mem.Add(7);
+                //if (g1Mem.IndexOf(4) == -1 && g2Mem.IndexOf(4) == -1)
+                //{
+                //    if (g2Mem.Count == 3) g2Mem.Add(4);
+                //    else g1Mem.Add(4);
+                //}
+                //if (g1Mem.IndexOf(5) == -1 && g2Mem.IndexOf(5) == -1)
+                //{
+                //    if (g1Mem.Count == 3) g1Mem.Add(4);
+                //    else g2Mem.Add(4);
+                //}
                 var drot = p2AdelPos.X > 100? float.Pi / 45: float.Pi / -45;
                 var meIndex = accessory.Data.PartyList.ToList().IndexOf(accessory.Data.Me);
                 var dp = accessory.Data.GetDefaultDrawProperties();
