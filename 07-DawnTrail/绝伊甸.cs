@@ -10,6 +10,7 @@ using ECommons;
 using System.Numerics;
 using Newtonsoft.Json;
 using System.Linq;
+using System.ComponentModel;
 
 namespace MyScriptNamespace
 {
@@ -25,10 +26,17 @@ namespace MyScriptNamespace
         [UserSetting("P1_转轮召分组依据")]
         public P1BrightFireEnum P1BrightFireGroup { get; set; }
         [UserSetting("P1_四连线头顶标记")]
+        public P1TetherEnum p1Thther4Type { get; set; }
+        [UserSetting("P1_四连线头顶标记")]
         public bool p1Thther4Marker { get; set; } = false;
 
-        [UserSetting("P1_光爆拉线方式")]
+        [UserSetting("P2_光爆拉线方式")]
         public P2LightRampantTetherEmum P2LightRampantTetherDeal { get; set; }
+        [UserSetting("P2_光爆八方站位方式")]
+        public P2LightRampant8DirEmum P2LightRampant8DirSet { get; set; }
+
+        [UserSetting("P3_分灯方式")]
+        public P3LampEmum P3LampDeal { get; set; }
 
         int? firstTargetIcon = null;
         double parse = 0;
@@ -51,16 +59,39 @@ namespace MyScriptNamespace
         List<int> P2LightRampantBuff = [0, 0, 0, 0, 0, 0, 0, 0];
         bool P2LightRampantTetherDone = new();
 
+        List<int> P3FireBuff = [0, 0, 0, 0, 0, 0, 0, 0];
+        List<int> P3WaterBuff = [0, 0, 0, 0, 0, 0, 0, 0];
+        List<int> P3ReturnBuff = [0, 0, 0, 0, 0, 0, 0, 0];
+        List<int> P3Lamp = [0, 0, 0, 0, 0, 0, 0, 0];
+        List<int> P3LampWise = [0, 0, 0, 0, 0, 0, 0, 0];
+        bool P3FloorFireDeal = false;
+
+
+        public enum P1TetherEnum
+        {
+            OneLine,
+            Mgl_TwoLine
+        }
         public enum P1BrightFireEnum
         {
             TNUp,
             MtGroupUp
+        }
+        public enum P2LightRampant8DirEmum
+        {
+            Normal,
+            TN_Up
         }
         public enum P2LightRampantTetherEmum
         {
             CircleNum,
             LTeam,
             AC_Cross,
+        }
+
+        public enum P3LampEmum
+        {
+            MGL
         }
         public void Init(ScriptAccessory accessory)
         {
@@ -73,7 +104,10 @@ namespace MyScriptNamespace
             P1四连线 = [];
             P1四连线开始 = false;
             P1塔 = [0, 0, 0, 0];
+
             P2DDIceDir.Clear();
+
+            P3FloorFireDeal = false;
         }
 
         #region P1
@@ -704,11 +738,29 @@ namespace MyScriptNamespace
                     var tehterObjIndex = P1四连线.Select(o => o % 10).ToList();
                     var tehterIsFire = P1四连线.Select(o => o < 20).ToList();
                     List<int> idleObjIndex = [];
-                    for (int i = 0; i < accessory.Data.PartyList.Count; i++)
+                    if (p1Thther4Type==P1TetherEnum.OneLine)
                     {
-                        if (!tehterObjIndex.Contains(i))
-                        { idleObjIndex.Add(i); }
+                        for (int i = 0; i < accessory.Data.PartyList.Count; i++)
+                        {
+                            if (!tehterObjIndex.Contains(i))
+                            { idleObjIndex.Add(i); }
+                        }
                     }
+                    if(p1Thther4Type==P1TetherEnum.Mgl_TwoLine)
+                    {
+                        List<int> group1 = [0, 1, 2, 3];
+                        List<int> group2 = [4, 5, 6, 7];
+                        group1.RemoveAll(x => tehterObjIndex.Contains(x));
+                        while (group1.Count>2)
+                        {
+                            var m = group1.First();
+                            group1.Remove(m);
+                            group2.Add(m);
+                        }
+                        idleObjIndex.AddRange(group1);
+                        idleObjIndex.AddRange(group2);
+                    }
+                    
                     if (!idleObjIndex.Contains(myindex)) return;
 
                     Vector3 i1p1 = tehterIsFire[0] ? new(100, 0, 100 - far - dis) : new(100 - dis, 0, 100 - far);
@@ -1221,6 +1273,7 @@ namespace MyScriptNamespace
         public void P2_钻石星尘_连续剑范围(Event @event, ScriptAccessory accessory)
         {
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            var time = 300;
             //93 先正面
             if (@event["ActionId"]=="40193")
             {
@@ -1230,7 +1283,7 @@ namespace MyScriptNamespace
                 dp.Radian = float.Pi / 2 * 3;
                 dp.Owner = sid;
                 dp.Color = accessory.Data.DefaultDangerColor;
-                dp.DestoryAt = 3500;
+                dp.DestoryAt = 3500-time;
                 accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
                 dp = accessory.Data.GetDefaultDrawProperties();
@@ -1240,7 +1293,7 @@ namespace MyScriptNamespace
                 dp.Rotation = float.Pi;
                 dp.Owner = sid;
                 dp.Color = accessory.Data.DefaultDangerColor;
-                dp.Delay = 3500;
+                dp.Delay = 3500-time;
                 dp.DestoryAt = 2000;
                 accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
             }
@@ -1253,7 +1306,7 @@ namespace MyScriptNamespace
                 dp.Rotation = float.Pi;
                 dp.Owner = sid;
                 dp.Color = accessory.Data.DefaultDangerColor;
-                dp.DestoryAt = 3500;
+                dp.DestoryAt = 3500-time;
                 accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
                 dp = accessory.Data.GetDefaultDrawProperties();
@@ -1262,7 +1315,7 @@ namespace MyScriptNamespace
                 dp.Radian = float.Pi / 2 * 3;
                 dp.Owner = sid;
                 dp.Color = accessory.Data.DefaultDangerColor;
-                dp.Delay = 3500;
+                dp.Delay = 3500-time;
                 dp.DestoryAt = 2000;
                 accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
             }
@@ -1564,6 +1617,54 @@ namespace MyScriptNamespace
                 P2LightRampantBuff[index] = count;
             }
         }
+        [ScriptMethod(name: "P2_光之暴走_分散分摊", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(4022[01])$"])]
+        public void P2_光之暴走_分散分摊(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 2.3) return;
+            if (@event["ActionId"] == "40221")
+            {
+                foreach (var pm in accessory.Data.PartyList)
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P2_光之暴走_分散";
+                    dp.Scale = new(5);
+                    dp.Owner = pm;
+                    dp.Color = accessory.Data.DefaultDangerColor;
+                    dp.DestoryAt = 5000;
+                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+                }
+            }
+            else
+            {
+                int[] group = [6, 7, 4, 5, 2, 3, 0, 1];
+                var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+                for (int i = 0; i < 4; i++)
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P2_光之暴走_分摊";
+                    dp.Scale = new(5);
+                    dp.Owner = accessory.Data.PartyList[i];
+                    dp.Color = group[myindex] == i || i == myindex ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
+                    dp.DestoryAt = 5000;
+                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+                }
+            }
+
+        }
+        [ScriptMethod(name: "P2_光之暴走_分摊buff", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:4159"])]
+        public void P2_光之暴走_分摊buff(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 2.3) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P2_光之暴走_分摊buff";
+            dp.Scale = new(5);
+            dp.Owner = tid;
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.Delay = 12000;
+            dp.DestoryAt = 5000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+        }
         [ScriptMethod(name: "P2_光之暴走_塔处理位置", eventType: EventTypeEnum.TargetIcon)]
         public void P2_光之暴走_塔处理位置(Event @event, ScriptAccessory accessory)
         {
@@ -1581,16 +1682,30 @@ namespace MyScriptNamespace
                 if (P2LightRampantCircle.Contains(myindex)) return;
                 
                 List<int> tetherGroup = [];
-                if (!P2LightRampantCircle.Contains(2)) tetherGroup.Add(2);
-                if (!P2LightRampantCircle.Contains(6)) tetherGroup.Add(6);
-                if (!P2LightRampantCircle.Contains(0)) tetherGroup.Add(0);
-                if (!P2LightRampantCircle.Contains(7)) tetherGroup.Add(7);
-                if (!P2LightRampantCircle.Contains(3)) tetherGroup.Add(3);
-                if (!P2LightRampantCircle.Contains(5)) tetherGroup.Add(5);
-                if (!P2LightRampantCircle.Contains(1)) tetherGroup.Add(1);
-                if (!P2LightRampantCircle.Contains(4)) tetherGroup.Add(4);
+                if (P2LightRampant8DirSet == P2LightRampant8DirEmum.Normal)
+                {
+                    if (!P2LightRampantCircle.Contains(2)) tetherGroup.Add(2);
+                    if (!P2LightRampantCircle.Contains(6)) tetherGroup.Add(6);
+                    if (!P2LightRampantCircle.Contains(0)) tetherGroup.Add(0);
+                    if (!P2LightRampantCircle.Contains(7)) tetherGroup.Add(7);
+                    if (!P2LightRampantCircle.Contains(3)) tetherGroup.Add(3);
+                    if (!P2LightRampantCircle.Contains(5)) tetherGroup.Add(5);
+                    if (!P2LightRampantCircle.Contains(1)) tetherGroup.Add(1);
+                    if (!P2LightRampantCircle.Contains(4)) tetherGroup.Add(4);
+                }
+                if (P2LightRampant8DirSet == P2LightRampant8DirEmum.TN_Up)
+                {
+                    if (!P2LightRampantCircle.Contains(0)) tetherGroup.Add(0);
+                    if (!P2LightRampantCircle.Contains(1)) tetherGroup.Add(1);
+                    if (!P2LightRampantCircle.Contains(2)) tetherGroup.Add(2);
+                    if (!P2LightRampantCircle.Contains(3)) tetherGroup.Add(3);
+                    if (!P2LightRampantCircle.Contains(7)) tetherGroup.Add(7);
+                    if (!P2LightRampantCircle.Contains(6)) tetherGroup.Add(6);
+                    if (!P2LightRampantCircle.Contains(5)) tetherGroup.Add(5);
+                    if (!P2LightRampantCircle.Contains(4)) tetherGroup.Add(4);
+                }
 
-                
+
                 var myGroupIndex = tetherGroup.IndexOf(myindex);
                 Vector3 t1 = new(100.00f, 0, 084.00f);
                 Vector3 t2 = new(113.85f, 0, 092.00f);
@@ -1599,7 +1714,9 @@ namespace MyScriptNamespace
                 Vector3 t5 = new(086.14f, 0, 108.00f);
                 Vector3 t6 = new(086.14f, 0, 092.00f);
 
+                Vector3 pa = new(100.00f, 0, 82.00f);
                 Vector3 pb = new(118.00f, 0, 100.00f);
+                Vector3 pc = new(100.00f, 0, 118.00f);
                 Vector3 pd = new(82.00f, 0, 100.00f);
 
 
@@ -1654,6 +1771,14 @@ namespace MyScriptNamespace
                     {
                         dealpos = t1;
                     }
+                    if ((dealpos - t1).Length() < 1 || (dealpos - t2).Length() < 1 || (dealpos - t3).Length() < 1)
+                    {
+                        dealpos2 = pb;
+                    }
+                    else
+                    {
+                        dealpos2 = pd;
+                    }
                 }
                 if (P2LightRampantTetherDeal == P2LightRampantTetherEmum.LTeam)
                 {
@@ -1666,6 +1791,14 @@ namespace MyScriptNamespace
                         3 => t6,
                         5 => t2,
                     };
+                    if ((dealpos - t1).Length() < 1 || (dealpos - t2).Length() < 1 || (dealpos - t6).Length() < 1)
+                    {
+                        dealpos2 = pa;
+                    }
+                    else
+                    {
+                        dealpos2 = pc;
+                    }
                 }
                 if (P2LightRampantTetherDeal == P2LightRampantTetherEmum.AC_Cross)
                 {
@@ -1678,7 +1811,17 @@ namespace MyScriptNamespace
                         3 => t5,
                         5 => t3,
                     };
+                    if ((dealpos - t1).Length() < 1 || (dealpos - t2).Length() < 1 || (dealpos - t6).Length() < 1)
+                    {
+                        dealpos2 = pa;
+                    }
+                    else
+                    {
+                        dealpos2 = pc;
+                    }
                 }
+
+                
 
                 var dur = 10000;
                 var dp = accessory.Data.GetDefaultDrawProperties();
@@ -1700,14 +1843,7 @@ namespace MyScriptNamespace
                 dp.DestoryAt = dur;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
 
-                if ((dealpos-t1).Length()<1|| (dealpos - t2).Length() < 1 || (dealpos - t3).Length() < 1)
-                {
-                    dealpos2 = pb;
-                }
-                else
-                {
-                    dealpos2 = pd;
-                }
+                
 
                 dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = "P2_光之暴走_集合位置";
@@ -1759,40 +1895,7 @@ namespace MyScriptNamespace
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
             }
         }
-        [ScriptMethod(name: "P2_光之暴走_分散分摊", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(4022[01])$"])]
-        public void P2_光之暴走_分散分摊(Event @event, ScriptAccessory accessory)
-        {
-            if (parse != 2.3) return;
-            if (@event["ActionId"] == "40221")
-            {
-                foreach (var pm in accessory.Data.PartyList)
-                {
-                    var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = "P2_光之暴走_分散";
-                    dp.Scale = new(5);
-                    dp.Owner = pm;
-                    dp.Color = accessory.Data.DefaultDangerColor;
-                    dp.DestoryAt = 5000;
-                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
-                }
-            }
-            else
-            {
-                int[] group = [6, 7, 4, 5, 2, 3, 0, 1];
-                var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
-                for (int i = 0; i < 4; i++)
-                {
-                    var dp = accessory.Data.GetDefaultDrawProperties();
-                    dp.Name = "P2_光之暴走_分摊";
-                    dp.Scale = new(5);
-                    dp.Owner = accessory.Data.PartyList[i];
-                    dp.Color = group[myindex] == i || i == myindex ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
-                    dp.DestoryAt = 5000;
-                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
-                }
-            }
-
-        }
+        
         [ScriptMethod(name: "P2_光之暴走_八方分散位置", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:regex:^(4022[01])$"])]
         public void P2_光之暴走_八方分散位置(Event @event, ScriptAccessory accessory)
         {
@@ -1822,6 +1925,650 @@ namespace MyScriptNamespace
             dp.DestoryAt = 9000;
             accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
 
+        }
+        #endregion
+
+        #region P3
+        [ScriptMethod(name: "P3_时间压缩_分P", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(40266)$"], userControl: false)]
+        public void P3_时间压缩_分P(Event @event, ScriptAccessory accessory)
+        {
+            parse = 3.1d;
+            P3FireBuff = [0, 0, 0, 0, 0, 0, 0, 0];
+            P3WaterBuff= [0, 0, 0, 0, 0, 0, 0, 0];
+            P3ReturnBuff = [0, 0, 0, 0, 0, 0, 0, 0];
+            P3Lamp = [0, 0, 0, 0, 0, 0, 0, 0];
+            P3LampWise = [0, 0, 0, 0, 0, 0, 0, 0];
+        }
+        [ScriptMethod(name: "P3_时间压缩_Buff记录", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:^(2455|2456|2464|2462|2461|2460)$"], userControl: false)]
+        public void P3_时间压缩_Buff记录(Event @event, ScriptAccessory accessory)
+        {
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            if(!float.TryParse(@event["Duration"], out var dur)) return;
+            var index = accessory.Data.PartyList.IndexOf(tid);
+            if (index == -1) return;
+            //冰
+            if (@event["StatusID"] == "2462")
+            {
+                lock (P3FireBuff)
+                {
+                    P3FireBuff[index] = 4;
+                }
+            }
+            //火
+            if (@event["StatusID"] == "2455")
+            {
+                
+                var count = 1;
+                if (dur > 20) count = 2;
+                if (dur > 30) count = 3;
+                lock (P3FireBuff)
+                {
+                    P3FireBuff[index] = count;
+                }
+            }
+            //回返
+            if (@event["StatusID"] == "2464")
+            {
+                var count = 1;
+                if (dur > 20) count = 3;
+                lock (P3ReturnBuff)
+                {
+                    P3ReturnBuff[index] = count;
+                }
+            }
+            //水
+            if (@event["StatusID"] == "2461")
+            {
+                lock (P3WaterBuff)
+                {
+                    P3WaterBuff[index] = 1;
+                }
+            }
+            //圈
+            if (@event["StatusID"] == "2460")
+            {
+                lock (P3WaterBuff)
+                {
+                    P3WaterBuff[index] = 2;
+                }
+            }
+            //背对
+            if (@event["StatusID"] == "2456")
+            {
+                lock (P3WaterBuff)
+                {
+                    P3WaterBuff[index] = 3;
+                }
+            }
+
+
+
+        }
+        [ScriptMethod(name: "P3_时间压缩_灯记录", eventType: EventTypeEnum.Tether, eventCondition: ["Id:regex:^(0085|0086)$"], userControl: false)]
+        public void P3_时间压缩_灯记录(Event @event, ScriptAccessory accessory)
+        {
+            //0085紫
+            //0086黄
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+            var dir8= PositionTo8Dir(pos, new(100, 0, 100));
+            lock (P3Lamp)
+            {
+                P3Lamp[dir8] = @event["Id"] == "0086" ? 1 : 2;
+            }
+        }
+        [ScriptMethod(name: "P3_时间压缩_灯顺逆记录", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:2970"],userControl:false)]
+        public void P3_时间压缩_灯顺逆记录(Event @event, ScriptAccessory accessory)
+        {
+            //buff2970, 13 269顺时针 92 348逆时针
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["TargetPosition"]);
+            Vector3 centre = new(100, 0, 100);
+            var dir8 = PositionTo8Dir(pos, centre);
+            P3LampWise[dir8] = @event["StackCount"] == "92" ? 1 : 0;
+        }
+        [ScriptMethod(name: "P3_时间压缩_灯AOE", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:40235", "TargetIndex:1"])]
+        public void P3_时间压缩_灯AOE(Event @event, ScriptAccessory accessory)
+        {
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+            var rot= JsonConvert.DeserializeObject<float>(@event["SourceRotation"]);
+            Vector3 centre = new(100, 0, 100);
+            var dir8 = PositionTo8Dir(pos, centre);
+            var isWise = P3LampWise[dir8] == 1;
+            for (int i = 0; i < 9; i++)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_灯AOE";
+                dp.Scale = new(5,50);
+                dp.Position = pos;
+                dp.Rotation = rot + (i + 1) * float.Pi / 12 * (isWise ? -1 : 1);
+                dp.Color = accessory.Data.DefaultDangerColor;
+                dp.DestoryAt = 2000+(i*1000);
+                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
+            }
+        }
+        [ScriptMethod(name: "P3_时间压缩_Buff处理位置", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:40293"])]
+        public void P3_时间压缩_Buff处理位置(Event @event, ScriptAccessory accessory)
+        {
+
+            var myIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            if (myIndex == -1) return;
+            var myDir8 = MyLampIndex(myIndex);
+            accessory.Log.Debug($"myDir8 {myDir8}");
+            if (myDir8 == -1) return;
+            var myRot = myDir8 * float.Pi / 4;
+
+            Vector3 centre = new(100, 0, 100);
+            Vector3 fireN = new(100, 0, 84.5f);
+            Vector3 returnPosN = P3WaterBuff[myIndex] == 2 ? new(100, 0, 89.5f) : new(100, 0, 98);
+            Vector3 stopPos = new(100, 0, 101);
+            //火
+            var myFire = P3FireBuff[myIndex];
+            //短火
+            if (myFire == 1)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_短火_放火";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(fireN, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 7500;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_短火_放回溯";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(returnPosN, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 7500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_短火_场中分摊";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = centre;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 12500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_短火_输出位置";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(stopPos, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 22500;
+                dp.DestoryAt = 15000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+
+            //中火
+            if (myFire == 2)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_中火_中场分摊";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = centre;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 7500;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_中火_放回溯";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(returnPosN, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 7500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_中火_放火";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(fireN, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 12500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_中火_中场";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition =centre;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 17500;
+                dp.DestoryAt = 10000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_中火_输出位置";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(stopPos, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 32500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+            }
+
+            //长火
+            if (myFire == 3)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_长火_中场分摊";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = centre;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 7500;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_长火_中场分摊";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = centre;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 12500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_长火_回溯";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(returnPosN, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 17500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_长火_放火";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(fireN, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 22500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_长火_输出";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(stopPos, centre, myRot);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 27500;
+                dp.DestoryAt = 10000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+
+            if (myFire == 4)
+            {
+                if (myIndex <4)
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_冰TH_放冰";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = centre;
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 7500;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                    dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_冰TH_放回溯";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = RotatePoint(returnPosN, centre, myRot);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.Delay = 7500;
+                    dp.DestoryAt = 5000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                    dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_冰TH_场中分摊";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = centre;
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.Delay = 12500;
+                    dp.DestoryAt = 5000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+
+                    dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_冰TH_输出位置";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = RotatePoint(stopPos, centre, myRot);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.Delay = 22500;
+                    dp.DestoryAt = 15000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                }
+                else
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_冰D_中场分摊";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = centre;
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.DestoryAt = 7500;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                    dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_冰D_中场分摊";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = centre;
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.Delay = 12500;
+                    dp.DestoryAt = 5000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                    dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_冰D_回溯";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = RotatePoint(returnPosN, centre, myRot);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.Delay = 17500;
+                    dp.DestoryAt = 5000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                    dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_冰D_放冰";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = centre;
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.Delay = 22500;
+                    dp.DestoryAt = 5000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                    dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = "P3_时间压缩_长火_输出";
+                    dp.Scale = new(2);
+                    dp.ScaleMode |= ScaleMode.YByDistance;
+                    dp.Owner = accessory.Data.Me;
+                    dp.TargetPosition = RotatePoint(stopPos, centre, myRot);
+                    dp.Color = accessory.Data.DefaultSafeColor;
+                    dp.Delay = 27500;
+                    dp.DestoryAt = 10000;
+                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                }
+            }
+        }
+        [ScriptMethod(name: "P3_时间压缩_灯处理位置", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:2970"])]
+        public void P3_时间压缩_灯处理位置(Event @event, ScriptAccessory accessory)
+        {
+            //buff2970, 13 269顺时针 92 348逆时针
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["TargetPosition"]);
+            Vector3 centre = new(100, 0, 100);
+            var myIndex=accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            var dir8 = PositionTo8Dir(pos, centre);
+            Vector3 nPos = @event["StackCount"] == "92" ? new(98, 0, 90) : new(102, 0, 90);
+            if (dir8 == MyLampIndex(myIndex))
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_时间压缩_灯处理位置";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = RotatePoint(nPos,centre,dir8*float.Pi/4);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 4000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+        }
+
+        [ScriptMethod(name: "P3_时间压缩_破盾一击集合提示", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:40286"])]
+        public void P3_时间压缩_破盾一击集合提示(Event @event, ScriptAccessory accessory)
+        {
+            accessory.Method.TextInfo("场中集合",3000);
+            accessory.Method.TTS("场中集合");
+        }
+        [ScriptMethod(name: "P3_时间压缩_黑暗光环", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:40290"])]
+        public void P3_时间压缩_黑暗光环(Event @event, ScriptAccessory accessory)
+        {
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            var myindex=accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_时间压缩_黑暗光环";
+            dp.Scale = new(20);
+            dp.Owner = sid;
+            dp.TargetObject = tid;
+            dp.Color = myindex == 0 || myindex == 1 ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 5000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
+        }
+
+        [ScriptMethod(name: "P3_二运_地火", eventType: EventTypeEnum.ObjectEffect, eventCondition: ["Id1:4", "Id2:regex:^(16|64)$"])]
+        public void P3_二运_地火(Event @event, ScriptAccessory accessory)
+        {
+            lock (this)
+            {
+                if (P3FloorFireDeal) return;
+                P3FloorFireDeal = true;
+            }
+            Vector3 centre = new(100, 0, 100);
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+            var clockwise = @event["Id2"] == "64" ? -1 : 1;
+            var preTime = 100;
+            //间隔11 2 2 2 2 2
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_中心";
+            dp.Scale = new(9);
+            dp.Position = centre;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 12700;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_起始点_11";
+            dp.Scale = new(9);
+            dp.Position = pos;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 15000 - preTime;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_起始点_12";
+            dp.Scale = new(9);
+            dp.Position = pos;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 17000 - preTime;
+            dp.DestoryAt = 4000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_起始点_21";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 15000 - preTime;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_起始点_22";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 17000 - preTime;
+            dp.DestoryAt = 4000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第二点_11";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 4 * clockwise);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 17000 - preTime;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第二点_12";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 4 * clockwise);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 19000 - preTime;
+            dp.DestoryAt = 2000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第二点_21";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 4 * clockwise + float.Pi);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 17000 - preTime;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第二点_22";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 4 * clockwise + float.Pi);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 19000 - preTime;
+            dp.DestoryAt = 2000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第三点_11";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 2 * clockwise);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 19000 - preTime;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第三点_21";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 2 * clockwise + float.Pi);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 19000 - preTime;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第四点_11";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 4 * 3 * clockwise);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 15000 - preTime;
+            dp.DestoryAt = 6000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第四点_21";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 4 * 3 * clockwise + float.Pi);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 15000 - preTime;
+            dp.DestoryAt = 6000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+        }
+
+        private int MyLampIndex(int myPartyIndex)
+        {
+            var nLampIndex = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                if (P3Lamp[i] == 1 && P3Lamp[(i+3)%8]==1 && P3Lamp[(i + 5) % 8] == 1)
+                {
+                    nLampIndex=i;
+                    break;
+                }
+            }
+            if (P3LampDeal==P3LampEmum.MGL)
+            {
+                //短火
+                if (P3FireBuff[myPartyIndex] == 1)
+                {
+                    if (myPartyIndex<4)
+                    {
+                        return (nLampIndex + 4) % 8;
+                    }
+                    else
+                    {
+                        var lowIndex = P3FireBuff.LastIndexOf(1);
+                        if (lowIndex != myPartyIndex)
+                        {
+                            return (nLampIndex + 7) % 8;
+                        }
+                        else
+                        {
+                            return (nLampIndex + 1) % 8;
+                        }
+                    }
+                    
+                }
+                //中火
+                if (P3FireBuff[myPartyIndex] == 2)
+                {
+                    if (myPartyIndex < 4) return (nLampIndex + 6) % 8;
+                    else return (nLampIndex + 2) % 8;
+                }
+                //长火
+                if (P3FireBuff[myPartyIndex] == 3)
+                {
+                    if (myPartyIndex<4)
+                    {
+                        var highIndex = P3FireBuff.IndexOf(3);
+                        if (highIndex == myPartyIndex)
+                        {
+                            return (nLampIndex + 5) % 8;
+                        }
+                        else
+                        {
+                            return (nLampIndex + 3) % 8;
+                        }
+                    }
+                    else
+                    {
+                        return (nLampIndex + 0) % 8;
+                    }
+                    
+                }
+                //冰
+                if (P3FireBuff[myPartyIndex] == 4)
+                {
+                    if (myPartyIndex < 4) return (nLampIndex + 4) % 8;
+                    else return (nLampIndex + 0) % 8;
+                }
+            }
+
+            return -1;
         }
         #endregion
 

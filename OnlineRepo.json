@@ -56,10 +56,10 @@
 {
     "Name": "绝伊甸绘图",
     "Guid": "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a",
-    "Version": "0.0.0.3",
+    "Version": "0.0.0.4",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E7%BB%9D%E4%BC%8A%E7%94%B8.cs",
-    "UpdateInfo": "1. P2结束"
+    "UpdateInfo": "1. 到P3地火\n2.增加p1抓人线双排法\n3.修复P2光爆对穿和l团集合点.\n4.修复P2 DD引导点错误." 
     
 },
 {
