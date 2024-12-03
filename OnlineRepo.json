@@ -2,10 +2,10 @@
 {
     "Name": "M1s绘图",
     "Guid": "8010d865-7d6d-4c23-92e0-f4b0120e18ac",
-    "Version": "0.0.0.7",
+    "Version": "0.0.0.8",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M1s.cs",
-    "UpdateInfo": "1.增加P3分身面向绘制。\n2. 增加P3分身拉怪辅助。"
+    "UpdateInfo": "1.P3分身拉怪辅助显示时间优化\n2.P3分身拉怪辅助以boss为起点绘制\n 3. P3分身面向辅助显示时间优化。"
 },
 {
     "Name": "M2s绘图",

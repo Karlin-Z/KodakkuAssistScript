@@ -18,7 +18,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.7", author: "Karlin")]
+    [ScriptType(name: "M1s绘图", territorys: [1226], guid: "8010d865-7d6d-4c23-92e0-f4b0120e18ac", version: "0.0.0.8", author: "Karlin")]
     public class M1sDraw
     {
         [UserSetting("地板修复击退,Mt组安全半场")]
@@ -618,7 +618,7 @@ namespace KarlinScriptNamespace
                 //37966 左跳左刀
                 //37967 右跳右刀
                 //37968 右跳左刀
-                if (P3TetherTarget.Count > 2) return;
+                if (P3TetherTarget.Count < 3) return;
                 var skillId = P3JumpSkill[P3TetherTarget.IndexOf(sid)];
                 var leftJump = (skillId == "37965" || skillId == "37966" || skillId == "37975");
 
@@ -638,11 +638,11 @@ namespace KarlinScriptNamespace
                 dp.Scale = new(4.9f, 5f);
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.Position = pos + dv;
+                dp.Rotation = pos.Z > 100 ? 0 : float.Pi;
                 dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.FixRotation = true;
                 dp.Rotation = isNouthCopy ? 0 : float.Pi;
-                dp.Delay = 40000;
-                dp.DestoryAt = 50000;
+                dp.DestoryAt = 17000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
 
             });
@@ -653,6 +653,7 @@ namespace KarlinScriptNamespace
         {
             if (parse != 3) return;
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
             Task.Delay(100).ContinueWith((t) =>
             {
                 //38959 右扇
@@ -689,7 +690,7 @@ namespace KarlinScriptNamespace
                     dp.Name = $"P3拉怪辅助起始";
                     dp.Scale = new(2, 10);
                     dp.Color = jumpColor.V4;
-                    dp.Owner = accessory.Data.Me;
+                    dp.Owner = tid;
                     dp.TargetPosition = epos;
                     dp.ScaleMode |= ScaleMode.YByDistance;
                     dp.Delay = 0;
@@ -712,6 +713,10 @@ namespace KarlinScriptNamespace
                     var pos2=new Vector3(pos.X,pos.Y,100-(pos.Z-100));
                     var isNouthCopy1 = Math.Abs(pos.Z - 95) < 1;
 
+                    //38959 右扇
+                    //37975 左扇
+                    var firstDur = (skillId1 == "38959" || skillId1 == "37975") ? 25000 : 17000;
+
                     Vector3 dv1 = new(0, 0, 0);
                     if (isNouthCopy1)
                     {
@@ -725,11 +730,11 @@ namespace KarlinScriptNamespace
                     dp.Name = $"P3拉怪辅助1";
                     dp.Scale = new(2, 10);
                     dp.Color = jumpColor.V4;
-                    dp.Owner = accessory.Data.Me;
+                    dp.Owner = tid;
                     dp.TargetPosition = pos + dv1;
                     dp.ScaleMode |= ScaleMode.YByDistance;
                     dp.Delay = 0;
-                    dp.DestoryAt = 17000;
+                    dp.DestoryAt = firstDur;
                     accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
 
                     Vector3 dv2 = new(0, 0, 0);
@@ -746,11 +751,11 @@ namespace KarlinScriptNamespace
                     dp.Name = $"P3拉怪辅助2";
                     dp.Scale = new(2, 10);
                     dp.Color = jumpColor.V4;
-                    dp.Owner = accessory.Data.Me;
+                    dp.Owner = tid;
                     dp.TargetPosition = pos2 + dv2;
                     dp.ScaleMode |= ScaleMode.YByDistance;
-                    dp.Delay = 27000;
-                    dp.DestoryAt = 20000;
+                    dp.Delay = firstDur;
+                    dp.DestoryAt = 47000- firstDur;
                     accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
                 }
                 
