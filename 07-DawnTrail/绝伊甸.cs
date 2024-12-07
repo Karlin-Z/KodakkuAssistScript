@@ -626,11 +626,12 @@ namespace MyScriptNamespace
         [ScriptMethod(name: "P1_四连线_清除连线记录器", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(40170)$"])]
         public void P1_四连线_清除连线记录器(Event @event, ScriptAccessory accessory)
         {
-            if (!p1Thther4Marker) return;
+            
             if (parse != 1d) return;
-            P1四连线.Clear();
             accessory.Method.MarkClear();
             P1四连线开始 =true;
+            if (p1Thther4Marker)
+                P1四连线.Clear();
         }
         [ScriptMethod(name: "P1_四连线_连线记录器", eventType: EventTypeEnum.Tether, eventCondition: ["Id:regex:^(00F9|011F)$"],userControl:false)]
         public void P1_四连线_连线记录器(Event @event, ScriptAccessory accessory)
@@ -2535,15 +2536,31 @@ namespace MyScriptNamespace
             dp.Name = "P3_二运_地火_第三点_11";
             dp.Scale = new(9);
             dp.Position = RotatePoint(pos, centre, float.Pi / 2 * clockwise);
+            dp.Color = (accessory.Data.DefaultDangerColor + accessory.Data.DefaultSafeColor) / 2;
+            dp.DestoryAt = 11000 - preTime;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第三点_12";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 2 * clockwise);
             dp.Color = accessory.Data.DefaultDangerColor;
-            dp.DestoryAt = 19000 - preTime;
+            dp.Delay = 11000 - preTime;
+            dp.DestoryAt = 8000 - preTime;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P3_二运_地火_第三点_21";
             dp.Scale = new(9);
             dp.Position = RotatePoint(pos, centre, float.Pi / 2 * clockwise + float.Pi);
+            dp.Color = (accessory.Data.DefaultDangerColor + accessory.Data.DefaultSafeColor) / 2;
+            dp.DestoryAt = 11000 - preTime;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_二运_地火_第三点_22";
+            dp.Scale = new(9);
+            dp.Position = RotatePoint(pos, centre, float.Pi / 2 * clockwise + float.Pi);
             dp.Color = accessory.Data.DefaultDangerColor;
-            dp.DestoryAt = 19000 - preTime;
+            dp.Delay = 11000 - preTime;
+            dp.DestoryAt = 8000 - preTime;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
 
             dp = accessory.Data.GetDefaultDrawProperties();
