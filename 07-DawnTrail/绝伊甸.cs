@@ -17,7 +17,7 @@ using Dalamud.Utility.Numerics;
 namespace MyScriptNamespace
 {
     
-    [ScriptType(name: "EdenUltimate", territorys: [1238],guid: "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a", version:"0.0.0.7",note: noteStr)]
+    [ScriptType(name: "EdenUltimate", territorys: [1238],guid: "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a", version:"0.0.0.8",note: noteStr)]
     public class EdenUltimate
     {
         const string noteStr =
@@ -3820,26 +3820,29 @@ namespace MyScriptNamespace
         [ScriptMethod(name: "P5_光与暗之翼_MT引导位置", eventType: EventTypeEnum.EnvControl, eventCondition: ["DirectorId:800375BF", "State:00010004", "Index:regex:^(0000003[012])"])]
         public void P5_光与暗之翼_MT引导位置(Event @event, ScriptAccessory accessory)
         {
+            //40313 先左后右 先远后近
+            //40233 先右后左 先近后远
             if (P5MtDone) return;
             P5MtDone = true;
             if (accessory.Data.PartyList.IndexOf(accessory.Data.Me) != 0) return;
-            //107
-            Vector3 dealpos = @event["Index"] switch
+            var light = @event["ActionId"] == "40313";
+            Vector3 towerPos = P5Tower switch
             {
-                "00000032" => new(100, 0, 93),
-                "00000031" => new(93.7f,0,103),
-                "00000030"=>new(106.2f,0,103.5f)
+                "00000032" => new(100, 0, 107),
+                "00000031" => new(106.06f, 0, 96.50f),
+                "00000030" => new(93.94f, 0, 96.50f)
             };
+
+            Vector3 mtPos1 = RotatePoint(towerPos, new(100, 0, 100), float.Pi);
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P5_光与暗之翼_MT引导位置1";
             dp.Scale = new(2);
             dp.Owner = accessory.Data.Me;
-            dp.TargetPosition = dealpos;
+            dp.TargetPosition = mtPos1;
             dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Color = accessory.Data.DefaultSafeColor;
-            dp.DestoryAt = 9500;
+            dp.DestoryAt = 2300;
             accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
-
         }
         [ScriptMethod(name: "P5_光与暗之翼_T引导位置", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(40313|40233)$"])]
         public void P5_光与暗之翼_T引导位置(Event @event, ScriptAccessory accessory)
@@ -3848,19 +3851,33 @@ namespace MyScriptNamespace
             //40233 先右后左 先近后远
 
             var light = @event["ActionId"] == "40313";
-            Vector3 mtPos1 = P5Tower switch
+            Vector3 towerPos = P5Tower switch
             {
-                "00000032" => new(100, 0, 93),
-                "00000031" => new(93.7f, 0, 103),
-                "00000030" => new(106.2f, 0, 103.5f)
+                "00000032" => new(100, 0, 107),
+                "00000031" => new(106.06f, 0, 96.50f),
+                "00000030" => new(93.94f, 0, 96.50f)
             };
+            var mtRot = 187.5f / 180 * MathF.PI;
+
+            Vector3 mtPos1 = RotatePoint(towerPos, new(100, 0, 100), light ? mtRot : -mtRot);
             Vector3 mtPos2 = light ? new((mtPos1.X - 100) / 7 + 100, 0, (mtPos1.Z - 100) / 7 + 100) : new((mtPos1.X - 100) / 7 * 15 + 100, 0, (mtPos1.Z - 100) / 7 * 15 + 100);
-            Vector3 stPos2 = RotatePoint(mtPos1, new(100, 0, 100), light ? float.Pi / 4 * 3 : -float.Pi / 4 * 3);
+            var stRot = 105f / 180 * MathF.PI;
+            Vector3 stPos2 = RotatePoint(mtPos1, new(100, 0, 100), light ? stRot : -stRot);
             Vector3 stPos1= light ? new((stPos2.X - 100) / 7*15 + 100, 0, (stPos2.Z - 100) / 7*15 + 100) : new((stPos2.X - 100) / 7  + 100, 0, (stPos2.Z - 100) / 7 + 100);
             var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
             if (myindex==0)
             {
                 var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P5_光与暗之翼_MT引导位置1";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = mtPos1;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 6900;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = "P5_光与暗之翼_MT引导位置2";
                 dp.Scale = new(2);
                 dp.Owner = accessory.Data.Me;
@@ -3902,7 +3919,8 @@ namespace MyScriptNamespace
                 dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.Color = accessory.Data.DefaultDangerColor;
                 dp.TargetColor = accessory.Data.DefaultSafeColor;
-                dp.DestoryAt = 7900;
+                dp.Delay = 3000;
+                dp.DestoryAt = 4900;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
 
                 dp = accessory.Data.GetDefaultDrawProperties();
