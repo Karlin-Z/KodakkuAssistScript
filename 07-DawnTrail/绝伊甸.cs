@@ -17,7 +17,7 @@ using Dalamud.Utility.Numerics;
 namespace MyScriptNamespace
 {
     
-    [ScriptType(name: "EdenUltimate", territorys: [1238],guid: "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a", version:"0.0.0.8",note: noteStr)]
+    [ScriptType(name: "EdenUltimate", territorys: [1238],guid: "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a", version:"0.0.0.9",note: noteStr)]
     public class EdenUltimate
     {
         const string noteStr =
@@ -102,8 +102,9 @@ namespace MyScriptNamespace
         }
         public enum P1BrightFireEnum
         {
-            TNUp,
-            MtGroupUp
+            TH_Up,
+            MtGroup_Up,
+            MtStD3D4_Up
         }
         public enum P2LightRampant8DirEmum
         {
@@ -115,6 +116,7 @@ namespace MyScriptNamespace
             CircleNum,
             LTeam,
             AC_Cross,
+            NewGrey9
         }
 
         public enum P3LampEmum
@@ -131,7 +133,8 @@ namespace MyScriptNamespace
         public void Init(ScriptAccessory accessory)
         {
             accessory.Method.RemoveDraw(".*");
-            accessory.Method.MarkClear();
+            if (p1Thther4Marker)
+                accessory.Method.MarkClear();
             parse = 1d;
             P1雾龙记录 = [0, 0, 0, 0];
             P1雾龙计数 = 0;
@@ -215,6 +218,9 @@ namespace MyScriptNamespace
         {
             if (parse != 1d) return;
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+
+            accessory.Method.Mark(sid,KodakkuAssist.Module.GameOperate.MarkType.Attack1,true);
+
             if (@event["ActionId"]== "40148" || @event["ActionId"] == "40330")
             {
                 foreach (var pm in accessory.Data.PartyList)
@@ -407,6 +413,14 @@ namespace MyScriptNamespace
                 _ => 0,
             };
             var mPosEnd = RotatePoint(new(100, 0, 82), new(100, 0, 100), float.Pi / 4 * rot8);
+            if (myindex==0)
+            {
+                mPosEnd = RotatePoint(mPosEnd, new(100, 0, 100), float.Pi / 36);
+            }
+            if (myindex == 6)
+            {
+                mPosEnd = RotatePoint(mPosEnd, new(100, 0, 100), float.Pi / -36);
+            }
 
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P1_雾龙_预站位位置";
@@ -571,16 +585,16 @@ namespace MyScriptNamespace
             var o1= P1转轮召抓人.IndexOf(1);
             var o2 = P1转轮召抓人.LastIndexOf(1);
             List<int> upGroup = [];
-            if (P1BrightFireGroup==P1BrightFireEnum.TNUp)
+            if (P1BrightFireGroup==P1BrightFireEnum.TH_Up)
             {
                 upGroup.Add(o1);
                 if (o1 != 1 && o2 != 1) upGroup.Add(1);
                 if (o1 != 2 && o2 != 2) upGroup.Add(2);
                 if (o1 != 3 && o2 != 3) upGroup.Add(3);
                 if (upGroup.Count < 4 && o1 != 0 && o2 != 0) upGroup.Add(0);
-                if (upGroup.Count < 4 && o1 != 6 && o2 != 6) upGroup.Add(6);
+                if (upGroup.Count < 4 && o1 != 4 && o2 != 4) upGroup.Add(4);
             }
-            if (P1BrightFireGroup == P1BrightFireEnum.MtGroupUp)
+            if (P1BrightFireGroup == P1BrightFireEnum.MtGroup_Up)
             {
                 upGroup.Add(o1);
                 if (o1 != 2 && o2 != 2) upGroup.Add(2);
@@ -589,7 +603,30 @@ namespace MyScriptNamespace
                 if (upGroup.Count < 4 && o1 != 0 && o2 != 0) upGroup.Add(0);
                 if (upGroup.Count < 4 && o1 != 1 && o2 != 1) upGroup.Add(1);
             }
-
+            if (P1BrightFireGroup == P1BrightFireEnum.MtStD3D4_Up)
+            {
+                List<int> upIndex = [0, 1, 6, 7];
+                if (upIndex.Contains(o1) && !upIndex.Contains(o2)) upGroup.Add(o1);
+                if (upIndex.Contains(o2) && !upIndex.Contains(o1)) upGroup.Add(o2);
+                if (upIndex.Contains(o1) && !upIndex.Contains(o2))
+                {
+                    if (upIndex.IndexOf(o1)<upIndex.IndexOf(o2))
+                    {
+                        upGroup.Add(o1);
+                    }
+                    else
+                    {
+                        upGroup.Add(o2);
+                    }
+                }
+                var up0 = upGroup[0];
+                var down0 = up0 == o1 ? o2 : o1;
+                if (up0 != 1 && down0 != 1) upGroup.Add(1);
+                if (up0 != 6 && down0 != 6) upGroup.Add(6);
+                if (up0 != 7 && down0 != 7) upGroup.Add(7);
+                if (upGroup.Count < 4 && up0 != 0 && down0 != 0) upGroup.Add(0);
+                if (upGroup.Count < 4 && up0 != 4 && down0 != 4) upGroup.Add(4);
+            }
 
             var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
             var dealpos1 = new Vector3(atEast ? 105.5f : 94.5f, 0, upGroup.Contains(myindex) ? 93 : 107);
@@ -957,6 +994,11 @@ namespace MyScriptNamespace
                         if (myIndex2 > P1塔[0] && myIndex2 <= P1塔[0]+ P1塔[1]) dealpos = new(eastTower ? 115.98f : 84.02f, 0, 100f);
                         if (myIndex2 > P1塔[0] + P1塔[1] && myIndex2 <= P1塔[0] + P1塔[1]+ P1塔[2]) dealpos = new(eastTower ? 113.08f : 86.92f, 0, 109.18f);
 
+                        Vector3 towerpos = default;
+                        if (myIndex2 > 0 && myIndex2 <= P1塔[0]) towerpos = new(eastTower ? 113.08f : 86.92f, 0, 90.81f);
+                        if (myIndex2 > P1塔[0] && myIndex2 <= P1塔[0] + P1塔[1]) towerpos = new(eastTower ? 115.98f : 84.02f, 0, 100f);
+                        if (myIndex2 > P1塔[0] + P1塔[1] && myIndex2 <= P1塔[0] + P1塔[1] + P1塔[2]) towerpos = new(eastTower ? 113.08f : 86.92f, 0, 109.18f);
+
                         var dp = accessory.Data.GetDefaultDrawProperties();
                         dp.Name = "P1_雷塔_塔处理位置_ND";
                         dp.Scale = new(2);
@@ -970,7 +1012,7 @@ namespace MyScriptNamespace
                         dp = accessory.Data.GetDefaultDrawProperties();
                         dp.Name = "P1_雷塔_塔_ND";
                         dp.Scale = new(4);
-                        dp.Position = dealpos;
+                        dp.Position = towerpos;
                         dp.Color = accessory.Data.DefaultSafeColor;
                         dp.DestoryAt = 10500;
                         accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
@@ -980,7 +1022,7 @@ namespace MyScriptNamespace
                 else
                 {
                     var eastTower = P1塔[3] == 1;
-                    //雷
+                    //火
                     if (myindex == 0 || myindex == 1)
                     {
                         var dx2 = eastTower ? -2f : 2f;
@@ -1026,6 +1068,11 @@ namespace MyScriptNamespace
                         if (myIndex2 > P1塔[0] && myIndex2 <= P1塔[0] + P1塔[1]) dealpos = new(eastTower ? 102f : 98f, 0, 100f);
                         if (myIndex2 > P1塔[0] + P1塔[1] && myIndex2 <= P1塔[0] + P1塔[1] + P1塔[2]) dealpos = new(eastTower ? 102f : 98f, 0, 109.18f);
 
+                        Vector3 towerpos = default;
+                        if (myIndex2 > 0 && myIndex2 <= P1塔[0]) towerpos = new(eastTower ? 113.08f : 86.92f, 0, 90.81f);
+                        if (myIndex2 > P1塔[0] && myIndex2 <= P1塔[0] + P1塔[1]) towerpos = new(eastTower ? 115.98f : 84.02f, 0, 100f);
+                        if (myIndex2 > P1塔[0] + P1塔[1] && myIndex2 <= P1塔[0] + P1塔[1] + P1塔[2]) towerpos = new(eastTower ? 113.08f : 86.92f, 0, 109.18f);
+
                         var dp = accessory.Data.GetDefaultDrawProperties();
                         dp.Name = "P1_雷塔_塔处理位置_ND";
                         dp.Scale = new(2);
@@ -1033,13 +1080,13 @@ namespace MyScriptNamespace
                         dp.TargetPosition = dealpos;
                         dp.ScaleMode |= ScaleMode.YByDistance;
                         dp.Color = accessory.Data.DefaultSafeColor;
-                        dp.DestoryAt = 10500;
+                        dp.DestoryAt = 9000;
                         accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
 
                         dp = accessory.Data.GetDefaultDrawProperties();
                         dp.Name = "P1_雷塔_塔_ND";
                         dp.Scale = new(4);
-                        dp.Position = dealpos;
+                        dp.Position = towerpos;
                         dp.Color = accessory.Data.DefaultSafeColor;
                         dp.DestoryAt = 10500;
                         accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
@@ -1053,7 +1100,7 @@ namespace MyScriptNamespace
         #endregion
 
         #region P2
-        [ScriptMethod(name: "P2_换P", eventType: EventTypeEnum.Director, eventCondition: ["Instance:800375BF", "Command:8000001E"])]
+        [ScriptMethod(name: "P2_换P", eventType: EventTypeEnum.Director, eventCondition: ["Instance:800375BF", "Command:8000001E"],userControl:false)]
         public void P2_换P(Event @event, ScriptAccessory accessory)
         {
             parse = 2d;
@@ -1768,12 +1815,12 @@ namespace MyScriptNamespace
                 if (P2LightRampantTetherDeal == P2LightRampantTetherEmum.CircleNum)
                 {
                     var count = 0;
-                    if (myindex==0)
+                    if (myindex == 0)
                     {
                         dealpos = t4;
                     }
                     count += P2LightRampantCircle.Contains(0) ? 1 : 0;
-                    if (myindex==7)
+                    if (myindex == 7)
                     {
                         dealpos = P2LightRampantCircle.Contains(0) ? t4 : t2;
                     }
@@ -1814,7 +1861,68 @@ namespace MyScriptNamespace
                     {
                         dealpos = t1;
                     }
+
+
                     if ((dealpos - t1).Length() < 1 || (dealpos - t2).Length() < 1 || (dealpos - t3).Length() < 1)
+                    {
+                        dealpos2 = pb;
+                    }
+                    else
+                    {
+                        dealpos2 = pd;
+                    }
+                }
+                if (P2LightRampantTetherDeal == P2LightRampantTetherEmum.NewGrey9)
+                {
+                    var count = 0;
+                    if (myindex == 0)
+                    {
+                        dealpos = t4;
+                    }
+                    count += P2LightRampantCircle.Contains(0) ? 1 : 0;
+                    if (myindex == 7)
+                    {
+                        dealpos = P2LightRampantCircle.Contains(0) ? t4 : t6;
+                    }
+                    count += P2LightRampantCircle.Contains(7) ? 1 : 0;
+                    if (myindex == 1)
+                    {
+                        if (count == 0) dealpos = t2;
+                        if (count == 1) dealpos = t6;
+                        if (count == 2) dealpos = t4;
+                    }
+                    count += P2LightRampantCircle.Contains(1) ? 1 : 0;
+                    if (myindex == 5)
+                    {
+                        if (count == 0) dealpos = t5;
+                        if (count == 1) dealpos = t2;
+                        if (count == 2) dealpos = t6;
+                    }
+                    count += P2LightRampantCircle.Contains(5) ? 1 : 0;
+                    if (myindex == 3)
+                    {
+                        if (count == 0) dealpos = t3;
+                        if (count == 1) dealpos = t5;
+                        if (count == 2) dealpos = t2;
+                    }
+                    count += P2LightRampantCircle.Contains(3) ? 1 : 0;
+                    if (myindex == 4)
+                    {
+                        if (count == 0) dealpos = t1;
+                        if (count == 1) dealpos = t3;
+                        if (count == 2) dealpos = t5;
+                    }
+                    count += P2LightRampantCircle.Contains(4) ? 1 : 0;
+                    if (myindex == 2)
+                    {
+                        dealpos = P2LightRampantCircle.Contains(6) ? t1 : t3;
+                    }
+                    if (myindex == 6)
+                    {
+                        dealpos = t1;
+                    }
+
+                    if ((dealpos - t2).Length() < 1 || (dealpos - t3).Length() < 1 || (dealpos - t4).Length() < 1)
                     {
                         dealpos2 = pb;
                     }
@@ -3264,7 +3372,7 @@ namespace MyScriptNamespace
 
             var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
 
-            Vector3 dealpos = new(@event["ActionId"] == "40227" ? 105 : 95, 0, upGroup.Contains(myindex) ? 92 : 108);
+            Vector3 dealpos = new(@event["ActionId"] == "40227" ? 105 : 95, 0, upGroup.Contains(myindex) ? 92.5f : 107.5f);
 
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P4_暗光龙诗_分摊处理位置";

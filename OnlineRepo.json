@@ -56,10 +56,10 @@
 {
     "Name": "绝伊甸绘图",
     "Guid": "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a",
-    "Version": "0.0.0.8",
+    "Version": "0.0.0.9",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E7%BB%9D%E4%BC%8A%E7%94%B8.cs",
-    "UpdateInfo": "1.修复P1 和mlm触发器冲突导致标点复读\n2. P3二运增加碎灵一击范围\n3. P3二运地火显示时间调整至碎灵一击后之后\n4. P4一运碎灵一击增加水晶防炸范围\n5. P4一运水分摊增加水晶防炸范围\n6. P4二运常/慢灯aoe增加自定义显示时间，默认3s\n7. 精修了P4二运短红boff的站位指示\n8. P5地火优化了显示时长并增加清除方法避免乱显示\n9. P5增加左右刀双T引导位置" 
+    "UpdateInfo": "1. P1 转轮召新增 MtStD3D4上分组打法\n2. P1 转轮召修改 TNUp更新至新攻略Mt D1换位\n3. P2 光爆新增 新灰9打法" 
     
 },
 {
