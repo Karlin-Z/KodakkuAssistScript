@@ -56,10 +56,10 @@
 {
     "Name": "OmegaProtocolUltimate",
     "Guid": "625eb340-0811-4c37-b87c-c46fe5204940",
-    "Version": "0.0.0.1",
+    "Version": "0.0.0.2",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/OmegaProtocolUltimate.cs",
-    "UpdateInfo": "1. P1完成" 
+    "UpdateInfo": "1. 更新至P2结束\n2. 修复P1循环程序4线处理位置错误" 
     
 },
 {
