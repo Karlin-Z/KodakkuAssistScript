@@ -659,12 +659,11 @@ namespace MyScriptNamespace
             var c = accessory.Data.Objects.Where(o => o.DataId == 15713).FirstOrDefault();
             if (c == null) return;
             var dir4 = PositionTo4Dir(c!.Position, new(100, 0, 100));
-
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P2_协同程序PT_分摊处理位置";
             dp.Scale = new(2);
             dp.Owner = accessory.Data.Me;
-            dp.TargetPosition = RotatePoint(dealpos, new(100, 0, 100), float.Pi / 2 / dir4);
+            dp.TargetPosition = RotatePoint(dealpos, new(100, 0, 100), float.Pi / 2 * dir4);
             dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.DestoryAt = 7000;
@@ -832,6 +831,9 @@ namespace MyScriptNamespace
         }
         #endregion
 
+        #region P3
+
+        #endregion
 
         private static bool ParseObjectId(string? idStr, out uint id)
         {
