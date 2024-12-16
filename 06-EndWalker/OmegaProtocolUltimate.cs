@@ -630,21 +630,32 @@ namespace MyScriptNamespace
             //左边两个分摊
             if (leftGroup.Contains(P2_Stack[0]) && leftGroup.Contains(P2_Stack[1]))
             {
-                
                 var lowStackIndex = P2_Sony[P2_Stack[0]] < P2_Sony[P2_Stack[1]] ? P2_Stack[1] : P2_Stack[0];
                 var lowStackSony = P2_Sony[lowStackIndex];
                 var lowStackPartnerIndex = P2_Sony.IndexOf(lowStackSony) == lowStackIndex ? P2_Sony.LastIndexOf(lowStackSony) : P2_Sony.IndexOf(lowStackSony);
                 leftGroup.Remove(lowStackIndex);
                 leftGroup.Add(lowStackPartnerIndex);
             }
-            //边两个分摊
+            //右边两个分摊
             if (!leftGroup.Contains(P2_Stack[0]) && !leftGroup.Contains(P2_Stack[1]))
             {
-                var lowStackIndex = P2_Sony[P2_Stack[0]] < P2_Sony[P2_Stack[1]] ? P2_Stack[1] : P2_Stack[0];
-                var lowStackSony = P2_Sony[P2_Stack[0]] < P2_Sony[P2_Stack[1]] ? P2_Sony[P2_Stack[1]] : P2_Sony[P2_Stack[0]];
-                var lowStackPartnerIndex = P2_Sony.IndexOf(lowStackSony) == lowStackIndex ? P2_Sony.LastIndexOf(lowStackSony) : P2_Sony.IndexOf(lowStackSony);
-                leftGroup.Remove(lowStackPartnerIndex);
-                leftGroup.Add(lowStackIndex);
+                if (P2_PTBuffIsFar)
+                {
+                    var lowStackIndex = P2_Sony[P2_Stack[0]] < P2_Sony[P2_Stack[1]] ? P2_Stack[0] : P2_Stack[1];
+                    var lowStackSony = P2_Sony[lowStackIndex];
+                    var lowStackPartnerIndex = P2_Sony.IndexOf(lowStackSony) == lowStackIndex ? P2_Sony.LastIndexOf(lowStackSony) : P2_Sony.IndexOf(lowStackSony);
+                    leftGroup.Remove(lowStackPartnerIndex);
+                    leftGroup.Add(lowStackIndex);
+                }
+                else
+                {
+                    var lowStackIndex = P2_Sony[P2_Stack[0]] < P2_Sony[P2_Stack[1]] ? P2_Stack[1] : P2_Stack[0];
+                    var lowStackSony = P2_Sony[lowStackIndex];
+                    var lowStackPartnerIndex = P2_Sony.IndexOf(lowStackSony) == lowStackIndex ? P2_Sony.LastIndexOf(lowStackSony) : P2_Sony.IndexOf(lowStackSony);
+                    leftGroup.Remove(lowStackPartnerIndex);
+                    leftGroup.Add(lowStackIndex);
+                }
+                
             }
             
             Vector3 dealpos = default;
@@ -658,12 +669,13 @@ namespace MyScriptNamespace
             }
             var c = accessory.Data.Objects.Where(o => o.DataId == 15713).FirstOrDefault();
             if (c == null) return;
-            var dir4 = PositionTo4Dir(c!.Position, new(100, 0, 100));
+            var dir8 = PositionTo8Dir(c!.Position, new(100, 0, 100));
+            accessory.Log.Debug($"P2_协同程序PT {dir8} {leftGroup.Contains(myindex)}");
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P2_协同程序PT_分摊处理位置";
             dp.Scale = new(2);
             dp.Owner = accessory.Data.Me;
-            dp.TargetPosition = RotatePoint(dealpos, new(100, 0, 100), float.Pi / 2 * dir4);
+            dp.TargetPosition = RotatePoint(dealpos, new(100, 0, 100), float.Pi / 4 * dir8);
             dp.ScaleMode |= ScaleMode.YByDistance;
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.DestoryAt = 7000;
@@ -833,6 +845,18 @@ namespace MyScriptNamespace
 
         #region P3
 
+        [ScriptMethod(name: "P3_开场_分P", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:31507"], userControl: false)]
+        public void P3_开场_分P(Event @event, ScriptAccessory accessory)
+        {
+            parse = 3.0;
+        }
+        [ScriptMethod(name: "P3_开场_手臂AOE", eventType: EventTypeEnum.PlayActionTimeline, eventCondition: ["Id:regex:^(774[78])$", "SourceDataId:regex:^(1571[89])$"], userControl: false)]
+        public void P3_开场_手臂AOE(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 3.0) return;
+
+        }
+
         #endregion
 
         private static bool ParseObjectId(string? idStr, out uint id)
@@ -854,6 +878,13 @@ namespace MyScriptNamespace
         {
             var r = Math.Round(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
             return (int)r;
+        }
+        private int PositionTo8Dir(Vector3 point, Vector3 centre)
+        {
+            // Dirs: N = 0, NE = 1, ..., NW = 7
+            var r = Math.Round(4 - 4 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 8;
+            return (int)r;
+
         }
         private Vector3 RotatePoint(Vector3 point, Vector3 centre, float radian)
         {
