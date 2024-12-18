@@ -19,13 +19,20 @@ using ECommons.GameFunctions;
 namespace MyScriptNamespace
 {
     
-    [ScriptType(name: "OmegaProtocolUltimate", territorys: [1122],guid: "625eb340-0811-4c37-b87c-c46fe5204940", version:"0.0.0.2",note: noteStr)]
+    [ScriptType(name: "OmegaProtocolUltimate", territorys: [1122],guid: "625eb340-0811-4c37-b87c-c46fe5204940", version:"0.0.0.3",note: noteStr)]
     public class OmegaProtocolUltimate
     {
         const string noteStr =
         """
         欧米茄验证绝境战
         """;
+
+        [UserSetting("P3_开场排队顺序")]
+        public P3SortEnum P3_StackSort { get; set; }
+        [UserSetting("P3_小电视打法")]
+        public P3TVEnum P3_TV_Strategy { get; set; }
+
+
         List<int> HtdhParty = [2, 0, 1, 4, 5, 6, 7, 3];
         double parse = 0;
 
@@ -41,6 +48,25 @@ namespace MyScriptNamespace
         List<int> P2_Sony= [0, 0, 0, 0, 0, 0, 0, 0];
         List<int> P2_Stack = [0, 0, 0, 0, 0, 0, 0, 0];
         Dictionary<uint,uint> P2_刀光剑舞连线 = [];
+
+        int P3_ArmCount = 0;
+        List <int> P3_StartBuff= [0, 0, 0, 0, 0, 0, 0, 0];
+        bool P3_StartPreDone = false;
+        bool P3_StartDone=false;
+        List<int> P3_TVBuff = [0, 0, 0, 0, 0, 0, 0, 0];
+
+        List<int> P4Stack = [];
+
+        public enum P3SortEnum
+        {
+            HTDH,
+            THD
+        }
+        public enum P3TVEnum
+        {
+            Normal,
+            Static
+        }
 
         public void Init(ScriptAccessory accessory)
         {
@@ -670,7 +696,7 @@ namespace MyScriptNamespace
             var c = accessory.Data.Objects.Where(o => o.DataId == 15713).FirstOrDefault();
             if (c == null) return;
             var dir8 = PositionTo8Dir(c!.Position, new(100, 0, 100));
-            accessory.Log.Debug($"P2_协同程序PT {dir8} {leftGroup.Contains(myindex)}");
+            //accessory.Log.Debug($"P2_协同程序PT {dir8} {leftGroup.Contains(myindex)}");
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P2_协同程序PT_分摊处理位置";
             dp.Scale = new(2);
@@ -849,14 +875,698 @@ namespace MyScriptNamespace
         public void P3_开场_分P(Event @event, ScriptAccessory accessory)
         {
             parse = 3.0;
+            P3_ArmCount = 0;
+            P3_StartBuff = [0, 0, 0, 0, 0, 0, 0, 0];
+            P3_StartDone = false;
+            P3_StartPreDone = false;
+            P3_TVBuff = [0, 0, 0, 0, 0, 0, 0, 0];
+        }
+        [ScriptMethod(name: "P3_开场_Buff收集", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:^(3425|3426)$"], userControl: false)]
+        public void P3_开场_Buff收集(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 3.0) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            var index = accessory.Data.PartyList.IndexOf(tid);
+            if (index == -1) return;
+            lock (P3_StartBuff)
+            {
+                //1分散 2分摊
+                P3_StartBuff[index] = @event["StatusID"] == "3425" ? 1 : 2;
+            }
+        }
+        [ScriptMethod(name: "P3_小电视_Buff收集", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:^(3452|3453)$"], userControl: false)]
+        public void P3_小电视_Buff收集(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 3.0) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            var index = accessory.Data.PartyList.IndexOf(tid);
+            if (index == -1) return;
+            lock (P3_TVBuff)
+            {
+                P3_TVBuff[index] = @event["StatusID"] == "3452" ? 1 : 2;
+            }
         }
         [ScriptMethod(name: "P3_开场_手臂AOE", eventType: EventTypeEnum.PlayActionTimeline, eventCondition: ["Id:regex:^(774[78])$", "SourceDataId:regex:^(1571[89])$"], userControl: false)]
         public void P3_开场_手臂AOE(Event @event, ScriptAccessory accessory)
         {
             if (parse != 3.0) return;
+            lock (this)
+            {
+                P3_ArmCount++;
+                if (!ParseObjectId(@event["SourceId"], out var sid)) return;
 
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_开场_手臂AOE";
+                dp.Scale = new(11);
+                dp.Owner = sid;
+                dp.Color = accessory.Data.DefaultDangerColor;
+                dp.Delay= P3_ArmCount > 3 ? 11000 : 0;
+                dp.DestoryAt = P3_ArmCount > 3 ? 2500 : 14000;
+                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+            }
+        }
+        [ScriptMethod(name: "P3_开场_地震", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:31567"])]
+        public void P3_开场_地震(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 3.0) return;
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_开场_地震_1";
+            dp.Scale = new(6);
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 0;
+            dp.DestoryAt = 4800;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_开场_地震_2";
+            dp.InnerScale = new(6);
+            dp.Scale = new(12);
+            dp.Radian = float.Pi * 2;
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 4800;
+            dp.DestoryAt = 2000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Donut, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_开场_地震_3";
+            dp.InnerScale = new(12);
+            dp.Scale = new(18);
+            dp.Radian = float.Pi * 2;
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 6800;
+            dp.DestoryAt = 2000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Donut, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_开场_地震_4";
+            dp.InnerScale = new(18);
+            dp.Scale = new(24);
+            dp.Radian = float.Pi * 2;
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 8800;
+            dp.DestoryAt = 2000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Donut, dp);
+        }
+        [ScriptMethod(name: "P3_小电视_自身AOE", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(3159[56])$"])]
+        public void P3_小电视_自身AOE(Event @event, ScriptAccessory accessory)
+        {
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_小电视_自身AOE";
+            dp.Scale = new(7);
+            dp.Owner = accessory.Data.Me;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 7000;
+            dp.DestoryAt = 3000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+        }
+        [ScriptMethod(name: "P3_开场_Buff预站位处理位置", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:3426"])]
+        public async void P3_开场_Buff预站位处理位置(Event @event, ScriptAccessory accessory)
+        {
+            lock (this)
+            {
+                if(P3_StartPreDone) return;
+                P3_StartPreDone = true;
+            }
+            await Task.Delay(100);
+            List<int> sortOrder = P3_StackSort switch
+            {
+                P3SortEnum.HTDH => HtdhParty,
+                P3SortEnum.THD => [0, 1, 2, 3, 4, 5, 6, 7],
+                _ => [0, 1, 2, 3, 4, 5, 6, 7],
+            };
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            //1分散 2分摊
+            var myP3StartBuff = P3_StartBuff[myindex];
+            var myP3Index = 0;
+            for (int i = 0; i < sortOrder.Count; i++)
+            {
+
+                var index = sortOrder[i];
+                if (myP3StartBuff == P3_StartBuff[index]) myP3Index++;
+                //accessory.Log.Debug($"{myindex} {index} {myP3StartBuff} {P3_StartBuff[index]} {myP3Index}");
+                if (index == myindex) break;
+            }
+            Vector3 dealpos = default;
+            if (myP3StartBuff == 2 || myP3StartBuff == 0)
+            {
+                dealpos = myP3Index switch
+                {
+                    1 =>  new(092.00f, 0, 086.14f),
+                    2 =>  new(108.00f, 0, 086.14f),
+                    _ => default,
+                };
+            }
+            if (myP3StartBuff == 1)
+            {
+                dealpos = myP3Index switch
+                {
+                    1 => new(084.00f, 0, 100.00f),
+                    2 => new(092.00f, 0, 113.86f),
+                    3 => new(108.00f, 0, 113.86f),
+                    4 => new(116.00f, 0, 100.00f),
+                    _ => default,
+                };
+            }
+            if (dealpos == default) return;
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_开场_Buff预站位处理位置";
+            dp.Scale = new(2);
+            dp.Owner = accessory.Data.Me;
+            dp.TargetPosition = dealpos;
+            dp.ScaleMode |= ScaleMode.YByDistance;
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.DestoryAt = 3100;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+        }
+        [ScriptMethod(name: "P3_开场_处理位置", eventType: EventTypeEnum.PlayActionTimeline, eventCondition: ["Id:regex:^(774[78])$", "SourceDataId:regex:^(1571[89])$"])]
+        public void P3_开场_处理位置(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 3.0) return;
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+            if (MathF.Abs(pos.X - 100) > 1) return;
+            if (P3_StartDone) return;
+            P3_StartDone = true;
+
+            var northCirle = pos.Z < 100;
+
+            List<int> sortOrder = P3_StackSort switch
+            {
+                P3SortEnum.HTDH => HtdhParty,
+                P3SortEnum.THD => [0, 1, 2, 3, 4, 5, 6, 7],
+                _ => [0, 1, 2, 3, 4, 5, 6, 7],
+            };
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            //1分散 2分摊
+            var myP3StartBuff = P3_StartBuff[myindex];
+            var myP3Index = 0;
+            for (int i = 0; i < sortOrder.Count; i++)
+            {
+                
+                var index = sortOrder[i];
+                if (myP3StartBuff == P3_StartBuff[index]) myP3Index++;
+                //accessory.Log.Debug($"{myindex} {index} {myP3StartBuff} {P3_StartBuff[index]} {myP3Index}");
+                if (index == myindex) break;
+            }
+            
+            Vector3 dealpos1 = default;
+            Vector3 dealpos2 = default;
+            Vector3 dealpos3 = default;
+            Vector3 dealpos4 = default;
+            if (myP3StartBuff == 2 || myP3StartBuff == 0)
+            {
+                dealpos1 = myP3Index switch
+                {
+                    1 => northCirle ? new(086.7f, 0, 086.7f) : new(094.8f, 0, 082.0f),
+                    2 => northCirle ? new(113.3f, 0, 086.7f) : new(105.2f, 0, 082.0f),
+                    _ => default,
+                };
+                dealpos2 = myP3Index switch
+                {
+                    1 => northCirle ? new(087.8f, 0, 087.8f) : new(095.0f, 0, 083.5f),
+                    2 => northCirle ? new(112.2f, 0, 087.8f) : new(105.0f, 0, 083.5f),
+                    _ => default,
+                };
+                dealpos3 = myP3Index switch
+                {
+                    1 => northCirle ? new(088.4f, 0, 085.5f) : new(093.1f, 0, 082.8f),
+                    2 => northCirle ? new(111.6f, 0, 085.5f) : new(106.9f, 0, 082.8f),
+                    _ => default,
+                };
+                dealpos4 = myP3Index switch
+                {
+                    1 => northCirle ? new(094.7f, 0, 083.7f) : new(088.5f, 0, 087.0f),
+                    2 => northCirle ? new(105.3f, 0, 083.7f) : new(111.5f, 0, 087.0f),
+                    _ => default,
+                };
+            }
+            if (myP3StartBuff == 1)
+            {
+                dealpos1 = myP3Index switch
+                {
+                    1 => northCirle ? new(082.0f, 0, 095.0f) : new(082.0f, 0, 104.7f),
+                    2 => northCirle ? new(095.0f, 0, 118.0f) : new(086.5f, 0, 113.0f),
+                    3 => northCirle ? new(105.0f, 0, 118.0f) : new(113.5f, 0, 113.0f),
+                    4 => northCirle ? new(118.0f, 0, 095.0f) : new(118.0f, 0, 104.7f),
+                    _ => default,
+                };
+                dealpos2 = myP3Index switch
+                {
+                    1 => northCirle ? new(083.5f, 0, 095.5f) : new(083.5f, 0, 104.5f),
+                    2 => northCirle ? new(095.0f, 0, 116.5f) : new(088.0f, 0, 112.0f),
+                    3 => northCirle ? new(105.0f, 0, 116.5f) : new(112.0f, 0, 112.0f),
+                    4 => northCirle ? new(116.5f, 0, 095.5f) : new(116.5f, 0, 104.5f),
+                    _ => default,
+                };
+                dealpos3 = myP3Index switch
+                {
+                    1 => northCirle ? new(081.7f, 0, 097.2f) : new(081.6f, 0, 102.8f),
+                    2 => northCirle ? new(093.2f, 0, 117.2f) : new(088.5f, 0, 114.5f),
+                    3 => northCirle ? new(106.8f, 0, 117.2f) : new(111.5f, 0, 114.5f),
+                    4 => northCirle ? new(118.3f, 0, 097.2f) : new(118.4f, 0, 102.8f),
+                    _ => default,
+                };
+                dealpos4 = myP3Index switch
+                {
+                    1 => northCirle ? new(083.5f, 0, 104.0f) : new(084.0f, 0, 095.0f),
+                    2 => northCirle ? new(088.5f, 0, 112.5f) : new(095.0f, 0, 116.3f),
+                    3 => northCirle ? new(111.5f, 0, 112.5f) : new(105.0f, 0, 116.3f),
+                    4 => northCirle ? new(116.5f, 0, 104.0f) : new(116.0f, 0, 095.0f),
+                    _ => default,
+                };
+            }
+
+            if (dealpos1 != default)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_开场_处理位置_预站位";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealpos1;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 6000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+            if (dealpos1 != default && dealpos2 != default)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_开场_处理位置_1-2";
+                dp.Scale = new(2);
+                dp.Position = dealpos1;
+                dp.TargetPosition = dealpos2;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultDangerColor;
+                dp.DestoryAt = 6000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_开场_处理位置_2";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealpos2;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 6000;
+                dp.DestoryAt = 2000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+            if (dealpos2 != default && dealpos3 != default)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_开场_处理位置_2-3";
+                dp.Scale = new(2);
+                dp.Position = dealpos2;
+                dp.TargetPosition = dealpos3;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultDangerColor;
+                dp.DestoryAt = 8000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_开场_处理位置_3";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealpos3;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 8000;
+                dp.DestoryAt = 6000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+
+            if (dealpos3 != default && dealpos4 != default)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_开场_处理位置_3-4";
+                dp.Scale = new(2);
+                dp.Position = dealpos3;
+                dp.TargetPosition = dealpos4;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultDangerColor;
+                dp.DestoryAt = 14000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P3_开场_处理位置_4";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealpos4;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 14000;
+                dp.DestoryAt = 2000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+        }
+        [ScriptMethod(name: "P3_小电视_处理位置", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(3159[56])$"])]
+        public void P3_小电视_处理位置(Event @event, ScriptAccessory accessory)
+        {
+            //31595 东
+            //31595 西
+            if (parse != 3.0) return;
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            var meIsIdle = P3_TVBuff[myindex]==0;
+            var myBuffIndex = 0;
+            var isEast = @event["ActionId"] == "31595";
+            Vector3 dealpos = default;
+
+            for (int i = 0; i < HtdhParty.Count; i++)
+            {
+                var index = HtdhParty[i];
+                var isIdle = P3_TVBuff[index] == 0;
+                if (meIsIdle == isIdle) myBuffIndex++;
+                if (index == myindex) break;
+            }
+            if (P3_TV_Strategy==P3TVEnum.Normal)
+            {
+                if (meIsIdle)
+                {
+                    dealpos = myBuffIndex switch
+                    {
+                        1 => isEast ? new(099.0f, 0, 091.0f) : new(101.0f, 0, 091.0f),
+                        2 => isEast ? new(104.0f, 0, 100.0f) : new(096.0f, 0, 100.0f),
+                        3 => isEast ? new(115.5f, 0, 100.0f) : new(084.5f, 0, 100.0f),
+                        4 => isEast ? new(099.0f, 0, 109.0f) : new(101.0f, 0, 109.0f),
+                        5 => isEast ? new(099.0f, 0, 119.0f) : new(101.0f, 0, 119.0f),
+                        _ => default
+                    };
+                }
+                else
+                {
+                    dealpos = myBuffIndex switch
+                    {
+                        1 => isEast ? new(093.0f, 0, 082.0f) : new(107.0f, 0, 082.0f),
+                        2 => isEast ? new(086.0f, 0, 092.5f) : new(114.0f, 0, 092.5f),
+                        3 => isEast ? new(086.0f, 0, 107.5f) : new(114.0f, 0, 107.5f),
+                        _ => default
+                    } ;
+                }
+            }
+            if (P3_TV_Strategy == P3TVEnum.Static)
+            {
+                if (meIsIdle)
+                {
+                    dealpos = myBuffIndex switch
+                    {
+                        1 => isEast ? new(099.0f, 0, 091.0f) : new(101.0f, 0, 091.0f),
+                        2 => new(109.0f, 0, 100.0f),
+                        3 => new(119.0f, 0, 100.0f),
+                        4 => isEast ? new(099.0f, 0, 109.0f) : new(101.0f, 0, 109.0f),
+                        5 => isEast ? new(099.0f, 0, 119.0f) : new(101.0f, 0, 119.0f),
+                        _ => default
+                    };
+                }
+                else
+                {
+                    dealpos = myBuffIndex switch
+                    {
+                        1 => isEast ? new(095.0f, 0, 082.0f) : new(105.0f, 0, 082.0f),
+                        2 => new(086.0f, 0, 092.0f),
+                        3 => new(086.0f, 0, 108.0f),
+                        _ => default
+                    };
+                }
+            }
+
+            if (dealpos == default) return;
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_小电视_处理位置";
+            dp.Scale = new(2);
+            dp.Owner = accessory.Data.Me;
+            dp.TargetPosition = dealpos;
+            dp.ScaleMode |= ScaleMode.YByDistance;
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.DestoryAt = 10000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+        }
+        [ScriptMethod(name: "P3_小电视_面向辅助", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(3159[56])$"])]
+        public void P3_小电视_面向辅助(Event @event, ScriptAccessory accessory)
+        {
+            //31595 东
+            //31595 西
+            if (parse != 3.0) return;
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            var meIsIdle = P3_TVBuff[myindex] == 0;
+            if (meIsIdle) return;
+            var meLeft = P3_TVBuff[myindex] == 2;
+            var myBuffIndex = 0;
+            var isEast = @event["ActionId"] == "31595";
+            float? seeRot = null;
+
+            for (int i = 0; i < HtdhParty.Count; i++)
+            {
+                var index = HtdhParty[i];
+                var isIdle = P3_TVBuff[index] == 0;
+                if (meIsIdle == isIdle) myBuffIndex++;
+                if (index == myindex) break;
+            }
+            //b pi/2
+
+            seeRot = myBuffIndex switch
+            {
+                1 => isEast ? (meLeft ? float.Pi : 0) : (meLeft ? 0 : float.Pi),
+                2 => meLeft ? float.Pi / 2 : float.Pi / -2,
+                3 => meLeft ? float.Pi / -2 : float.Pi / 2,
+                _ => null
+            };
+            if (seeRot == null) return;
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_小电视_面向辅助_自身1";
+            dp.Scale = new(5, 5);
+            dp.Owner = accessory.Data.Me;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 10000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_小电视_面向辅助_自身2";
+            dp.Scale = new(5, 1.5f);
+            dp.Offset = new(0, 0, -5);
+            dp.Rotation = float.Pi / 6 * 5;
+            dp.Owner = accessory.Data.Me;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 10000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_小电视_面向辅助_自身3";
+            dp.Scale = new(5, 1.5f);
+            dp.Offset = new(0, 0, -5);
+            dp.Rotation = float.Pi / 6 * -5;
+            dp.Owner = accessory.Data.Me;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 10000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P3_小电视_面向辅助_指向1";
+            dp.Scale = new(10,4);
+            dp.FixRotation = true;
+            dp.Rotation = seeRot.Value;
+            dp.Owner = accessory.Data.Me;
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.DestoryAt = 10000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Line, dp);
+            
+        }
+        #endregion
+
+        #region P4
+        [ScriptMethod(name: "P4_分P", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:31559"], userControl: false)]
+        public void P4_分P(Event @event, ScriptAccessory accessory)
+        {
+            parse = 4.0;
+            P4Stack = [];
+        }
+        [ScriptMethod(name: "P4_分摊点名记录", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:22393"],userControl:false)]
+        public void P4_分摊点名记录(Event @event, ScriptAccessory accessory)
+        {
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            var index = accessory.Data.PartyList.IndexOf(tid);
+            if (index == -1) return;
+            lock (P4Stack)
+            {
+                P4Stack.Add(index);
+            }
+        }
+        [ScriptMethod(name: "P4_地震", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:31567"])]
+        public void P4_地震(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 4.0) return;
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P4_地震_1";
+            dp.Scale = new(6);
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 0;
+            dp.DestoryAt = 4800;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P4_地震_2";
+            dp.InnerScale = new(6);
+            dp.Scale = new(12);
+            dp.Radian = float.Pi * 2;
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 4800;
+            dp.DestoryAt = 2000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Donut, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P4_地震_3";
+            dp.InnerScale = new(12);
+            dp.Scale = new(18);
+            dp.Radian = float.Pi * 2;
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 6800;
+            dp.DestoryAt = 2000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Donut, dp);
+
+            dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P4_地震_4";
+            dp.InnerScale = new(18);
+            dp.Scale = new(24);
+            dp.Radian = float.Pi * 2;
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 8800;
+            dp.DestoryAt = 2000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Donut, dp);
+        }
+        [ScriptMethod(name: "P4_第一段波动炮命中提示", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:31614", "TargetIndex:1"])]
+        public void P4_第一段波动炮命中提示(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 4.0) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            if (tid != accessory.Data.Me) return;
+            accessory.Method.TextInfo("走", 2000, true);
+            accessory.Method.TTS("走");
+        }
+        [ScriptMethod(name: "P4_第二段波动炮", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:31616"])]
+        public void P4_第二段波动炮(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 4.0) return;
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P4_第二段八方波动炮";
+            dp.Scale = new(6,50);
+            dp.Owner = sid;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Delay = 0;
+            dp.DestoryAt = 4800;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
         }
 
+        [ScriptMethod(name: "P4_第一段波动炮引导位置", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:regex:^(3161[07])$"])]
+        public void P4_第一段波动炮引导位置(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 4.0) return;
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            Vector3 dealpos = myindex switch
+            {
+                0 => new(087.5f, 0, 094.5f),
+                6 => new(086.5f, 0, 100.0f),
+                2 => new(087.5f, 0, 105.0f),
+                4 => new(090.5f, 0, 109.5f),
+                1 => new(112.5f, 0, 094.5f),
+                7 => new(113.5f, 0, 100.0f),
+                3 => new(112.5f, 0, 105.0f),
+                5 => new(109.5f, 0, 109.5f),
+                _ => default
+            };
+            if (dealpos == default) return;
+
+            if (@event["ActionId"]== "31610")
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P4_第一段波动炮引导位置";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealpos;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.DestoryAt = 14000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+            else
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P4_第一段波动炮引导位置";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealpos;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 5500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P4_第一段波动炮引导位置";
+                dp.Scale = new(2);
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealpos;
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 15500;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            }
+            
+        }
+        [ScriptMethod(name: "P4_第二段波动炮分摊位置", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:31614", "TargetIndex:1"])]
+        public void P4_第二段波动炮分摊位置(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 4.0) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            if (tid != accessory.Data.Me) return;
+
+            var myindex=accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+
+            var stack1 = P4Stack[^1];
+            var stack2 = P4Stack[^2];
+
+            List<int> leftGroup = [0, 6, 2, 4];
+            List<int> rightGroup = [1, 7, 3, 5];
+            if (leftGroup.Contains(stack1) && leftGroup.Contains(stack2))
+            {
+                var change = leftGroup.IndexOf(stack1) < leftGroup.IndexOf(stack2) ? stack2 : stack1;
+                leftGroup.Remove(change);
+                leftGroup.Add(5);
+                rightGroup.Remove(5);
+                rightGroup.Add(change);
+            }
+            if (rightGroup.Contains(stack1) && rightGroup.Contains(stack2))
+            {
+                var change = rightGroup.IndexOf(stack1) < rightGroup.IndexOf(stack2) ? stack2 : stack1;
+                rightGroup.Remove(change);
+                rightGroup.Add(4);
+                leftGroup.Remove(4);
+                rightGroup.Add(change);
+            }
+
+            Vector3 dealpos = leftGroup.Contains(myindex) ? new(96.5f, 0, 113) : new(103.5f, 0, 113);
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P4_第二段波动炮分摊位置";
+            dp.Scale = new(2);
+            dp.Owner = accessory.Data.Me;
+            dp.TargetPosition = dealpos;
+            dp.ScaleMode |= ScaleMode.YByDistance;
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.DestoryAt = 5000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+        }
         #endregion
 
         private static bool ParseObjectId(string? idStr, out uint id)
