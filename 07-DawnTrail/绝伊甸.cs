@@ -17,7 +17,7 @@ using Dalamud.Utility.Numerics;
 namespace MyScriptNamespace
 {
     
-    [ScriptType(name: "EdenUltimate", territorys: [1238],guid: "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a", version:"0.0.0.9",note: noteStr)]
+    [ScriptType(name: "EdenUltimate", territorys: [1238],guid: "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a", version:"0.0.0.10",note: noteStr)]
     public class EdenUltimate
     {
         const string noteStr =
@@ -218,8 +218,6 @@ namespace MyScriptNamespace
         {
             if (parse != 1d) return;
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
-
-            accessory.Method.Mark(sid,KodakkuAssist.Module.GameOperate.MarkType.Attack1,true);
 
             if (@event["ActionId"]== "40148" || @event["ActionId"] == "40330")
             {
@@ -3610,7 +3608,7 @@ namespace MyScriptNamespace
                 Vector3 dealpos1 = isHigh ? new(088.5f, 0, 115.5f) : new(111.5f, 0, 115.5f);
                 Vector3 dealpos2 = isHigh ? new(090.2f, 0, 117.0f) : new(109.8f, 0, 117.0f);
                 Vector3 dealpos3 = isHigh ? new(092.5f, 0, 118.0f) : new(107.5f, 0, 118.0f);
-                Vector3 dealpos4 = isHigh ? new(093.0f, 0, 107.0f) : new(107.0f, 0, 107.0f);
+                Vector3 dealpos4 = isHigh ? new(092.0f, 0, 110.0f) : new(108.0f, 0, 110.0f);
 
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = "P4_时间结晶_Buff处理位置_躲ac";
@@ -3659,7 +3657,7 @@ namespace MyScriptNamespace
                 dp.TargetPosition = dealpos3;
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.Delay = 10500;
-                dp.DestoryAt = 3000;
+                dp.DestoryAt = 2500;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
 
                 dp = accessory.Data.GetDefaultDrawProperties();
@@ -3669,7 +3667,17 @@ namespace MyScriptNamespace
                 dp.Position = dealpos3;
                 dp.TargetPosition = dealpos4;
                 dp.Color = accessory.Data.DefaultSafeColor;
-                dp.DestoryAt = 13500;
+                dp.DestoryAt = 13000;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = "P4_时间结晶_Buff处理位置_撞头";
+                dp.Scale = new(2);
+                dp.ScaleMode |= ScaleMode.YByDistance;
+                dp.Owner = accessory.Data.Me;
+                dp.TargetPosition = dealpos2;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Delay = 13000;
+                dp.DestoryAt = 2000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
             }
             //蓝

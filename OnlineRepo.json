@@ -65,10 +65,10 @@
 {
     "Name": "绝伊甸绘图",
     "Guid": "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a",
-    "Version": "0.0.0.9",
+    "Version": "0.0.0.10",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E7%BB%9D%E4%BC%8A%E7%94%B8.cs",
-    "UpdateInfo": "1. P1 转轮召新增 MtStD3D4上分组打法\n2. P1 转轮召修改 TNUp更新至新攻略Mt D1换位\n3. P2 光爆新增 新灰9打法" 
+    "UpdateInfo": "1. 修复开场给boss标攻击1\n2. P4 二运撞头点优化" 
     
 },
 {
