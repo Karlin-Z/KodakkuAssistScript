@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using KodakkuAssist.Module.GameEvent;
 using KodakkuAssist.Script;
 using KodakkuAssist.Module.Draw;
@@ -11,13 +11,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ECommons;
 using System.Linq;
+using ECommons.Logging;
 using ImGuiNET;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "极艳翼蛇鸟绘图", territorys:[1196],guid: "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a", version:"0.0.0.2", author: "Karlin")]
+    [ScriptType(name: "极艳翼蛇鸟绘图", territorys:[1196],guid: "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a", version:"0.0.0.3", author: "Karlin")]
     public class ValigarmandaExDraw
     {
         
@@ -52,6 +53,58 @@ namespace KarlinScriptNamespace
         {
             parse = 3;
         }
+
+        #region 开场指路
+
+        private int 第几次冰 = 0;
+
+        [ScriptMethod(name: "开场指路", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:36853"])]
+        public void 开场指路(Event @event, ScriptAccessory accessory)
+        {
+            第几次冰++;
+            if (第几次冰 != 2) return;
+
+            var firstLeft = @event["SourceRotation"] == "0.79";
+            var pos1 = firstLeft ? new Vector3(98, 0, 100) : new Vector3(102, 0, 100);
+            var pos2 = firstLeft ? new Vector3(104, 0, 101) : new Vector3(96, 0, 101);
+            var pos3 = new Vector3(100, 0, 99);
+            
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "开场指路1";
+            dp.Scale = new Vector2(3);
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.Owner = accessory.Data.Me;
+            dp.TargetPosition = pos1;
+            dp.ScaleMode |= ScaleMode.YByDistance;
+            dp.Delay = 1400;
+            dp.DestoryAt = 1500;
+            
+            var dp2 = accessory.Data.GetDefaultDrawProperties();
+            dp2.Name = "开场指路2";
+            dp2.Scale = new Vector2(3);
+            dp2.Color = accessory.Data.DefaultSafeColor;
+            dp2.Owner = accessory.Data.Me;
+            dp2.TargetPosition = pos2;
+            dp2.ScaleMode |= ScaleMode.YByDistance;
+            dp2.Delay = 2900;
+            dp2.DestoryAt = 5000;
+            
+            var dp3 = accessory.Data.GetDefaultDrawProperties();
+            dp3.Name = "开场指路3";
+            dp3.Scale = new Vector2(3);
+            dp3.Color = accessory.Data.DefaultSafeColor;
+            dp3.Owner = accessory.Data.Me;
+            dp3.TargetPosition = pos3;
+            dp3.ScaleMode |= ScaleMode.YByDistance;
+            dp3.Delay = 7900;
+            dp3.DestoryAt = 10000;
+
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp2);
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp3);
+        }
+
+        #endregion
 
         #region Buff
         [ScriptMethod(name: "火分摊", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:3817"])]
@@ -498,4 +551,3 @@ namespace KarlinScriptNamespace
         }
     }
 }
-
