@@ -41,9 +41,10 @@
 {
     "Name": "极艳翼蛇鸟绘图",
     "Guid": "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a",
-    "Version": "0.0.0.2",
+    "Version": "0.0.0.3",
     "Author": "Karlin",
-    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E8%89%B3%E7%BF%BC%E8%9B%87%E9%B8%9F.cs"
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E8%89%B3%E7%BF%BC%E8%9B%87%E9%B8%9F.cs",
+    "UpdateInfo": "1. 增加开场冰指路。\n2. 修复冰阶段指路无效。"
 },
 {
     "Name": "绝龙诗绘图",
