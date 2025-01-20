@@ -48,10 +48,10 @@
 {
     "Name": "绝龙诗绘图",
     "Guid": "d9c97e91-9b59-432d-a3a1-42a8475b7e2a",
-    "Version": "0.0.0.4",
+    "Version": "0.0.0.5",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%B9%BB%E6%83%B3%E9%BE%99%E8%AF%97%E7%BB%9D%E5%A2%83%E6%88%98.cs",
-    "UpdateInfo": "1. 修复P2 2运劈刀 D1 D2指向位置错误。"
+    "UpdateInfo": "1. 再次修复P2 2运劈刀 D1 D2指向位置错误。"
 },
 {
     "Name": "OmegaProtocolUltimate",
