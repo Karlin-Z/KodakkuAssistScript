@@ -18,7 +18,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "极艳翼蛇鸟绘图", territorys:[1196],guid: "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a", version:"0.0.0.3", author: "Karlin")]
+    [ScriptType(name: "极艳翼蛇鸟绘图", territorys:[1196],guid: "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a", version:"0.0.0.4", author: "Karlin")]
     public class ValigarmandaExDraw
     {
         
@@ -56,15 +56,32 @@ namespace KarlinScriptNamespace
 
         #region 开场指路
 
-        private int 第几次冰 = 0;
-
+        private int 第几次冰;
+        
+        [ScriptMethod(name: "冰剑读条", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:36850"],userControl:false)]
+        public void 冰剑读条(Event @event, ScriptAccessory accessory)
+        {
+            第几次冰 = 0;
+            
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "开场指路0";
+            dp.Scale = new Vector2(3);
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.Owner = accessory.Data.Me;
+            dp.TargetPosition = new Vector3(100,0,101);
+            dp.ScaleMode |= ScaleMode.YByDistance;
+            dp.DestoryAt = 12151;
+            
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+        }
+        
         [ScriptMethod(name: "开场指路", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:36853"])]
         public void 开场指路(Event @event, ScriptAccessory accessory)
         {
             第几次冰++;
             if (第几次冰 != 2) return;
 
-            var firstLeft = @event["SourceRotation"] == "0.79";
+            var firstLeft = @event["SourceRotation"].StartsWith("0.");
             var pos1 = firstLeft ? new Vector3(98, 0, 100) : new Vector3(102, 0, 100);
             var pos2 = firstLeft ? new Vector3(104, 0, 101) : new Vector3(96, 0, 101);
             var pos3 = new Vector3(100, 0, 99);
