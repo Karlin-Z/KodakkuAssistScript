@@ -4,14 +4,17 @@
     "Guid": "8010d865-7d6d-4c23-92e0-f4b0120e18ac",
     "Version": "0.0.0.8",
     "Author": "Karlin",
+    "TerritoryIds": [1226],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M1s.cs",
     "UpdateInfo": "1.P3分身拉怪辅助显示时间优化\n2.P3分身拉怪辅助以boss为起点绘制\n 3. P3分身面向辅助显示时间优化。"
+    
 },
 {
     "Name": "M2s绘图",
     "Guid": "d99c7e91-9b56-432d-a3a8-49a8586915b7e2a",
     "Version": "0.0.0.2",
     "Author": "Karlin",
+    "TerritoryIds": [1228],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M2S.cs",
     "UpdateInfo":"1. 修复第二次直播放圈仍提示踩塔"
 },
@@ -20,6 +23,7 @@
     "Guid": "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5",
     "Version": "0.0.0.4",
     "Author": "Karlin",
+    "TerritoryIds": [1230],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M3S.cs",
     "UpdateInfo": "1. 修复3层场边大击退距离不对。\n2. 3层增加aoe提示。\n3. 3层P2长短引线处理位置，感谢Karisa提供代码"
 },
@@ -28,6 +32,7 @@
     "Guid": "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2",
     "Version": "0.0.0.12",
     "Author": "Karlin",
+    "TerritoryIds": [1232],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M4S.cs",
     "UpdateInfo": "1. 修复蓝黄炮后buff分散，MMW攻略。TN和dps位置反向\n"
 },
@@ -36,6 +41,7 @@
     "Guid": "d9c97e91-9b59-432d-a3a1-42a8586985b7e2a",
     "Version": "0.0.0.1",
     "Author": "Karlin",
+    "TerritoryIds": [1201],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E4%BD%90%E6%8B%89%E5%8A%A0.cs"
 },
 {
@@ -43,6 +49,7 @@
     "Guid": "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a",
     "Version": "0.0.0.3",
     "Author": "Karlin",
+    "TerritoryIds": [1196],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E8%89%B3%E7%BF%BC%E8%9B%87%E9%B8%9F.cs",
     "UpdateInfo": "1. 增加开场冰指路。\n2. 修复冰阶段指路无效。"
 },
@@ -51,6 +58,7 @@
     "Guid": "d9c97e91-9b59-432d-a3a1-42a8475b7e2a",
     "Version": "0.0.0.5",
     "Author": "Karlin",
+    "TerritoryIds": [968],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%B9%BB%E6%83%B3%E9%BE%99%E8%AF%97%E7%BB%9D%E5%A2%83%E6%88%98.cs",
     "UpdateInfo": "1. 再次修复P2 2运劈刀 D1 D2指向位置错误。"
 },
@@ -59,6 +67,7 @@
     "Guid": "625eb340-0811-4c37-b87c-c46fe5204940",
     "Version": "0.0.0.3",
     "Author": "Karlin",
+    "TerritoryIds": [1122],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/OmegaProtocolUltimate.cs",
     "UpdateInfo": "1. 更新至P4\n2. 修复P2 一运错误" 
     
@@ -68,6 +77,7 @@
     "Guid": "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a",
     "Version": "0.0.0.10",
     "Author": "Karlin",
+    "TerritoryIds": [1238],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E7%BB%9D%E4%BC%8A%E7%94%B8.cs",
     "UpdateInfo": "1. 修复开场给boss标攻击1\n2. P4 二运撞头点优化" 
     
@@ -77,6 +87,7 @@
     "Guid": "ad122d3e-0966-48c8-bddb-a0a3e9fe3a61",
     "Version": "0.0.0.1",
     "Author": "Karlin",
+    "TerritoryIds": [1069,1137,1176],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%A4%9A%E5%8F%98%E8%BF%B7%E5%AE%AB%E8%87%AA%E5%8A%A8%E5%8C%96.cs"
 },
 {
@@ -84,6 +95,7 @@
     "Guid": "9eed3085-cb11-738a-7e06-5ba0aa67363c",
     "Version": "0.0.0.1",
     "Author": "Karlin",
+    "TerritoryIds": [144],
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/00-Misc/%E9%87%91%E7%A2%9F%E5%B0%8F%E5%8A%A9%E6%89%8B.cs"
 }
 ]
