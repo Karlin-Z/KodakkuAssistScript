@@ -21,7 +21,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.4", author: "Karlin")]
+    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.5", author: "Karlin")]
     public class M3s绘图绘图
     {
         [UserSetting("按照TNTN顺序安排撞线位置")]
@@ -548,7 +548,7 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             var obj= accessory.Data.Objects.SearchByEntityId(sid);
             if(obj == null) return;
-            var statusCount= ((IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
+            var statusCount= ((Dalamud.Game.ClientState.Objects.Types.IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
 
             var dur = 5000;
             var shorDelay =parse==1? 12000:19000;
@@ -571,7 +571,7 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             var obj = accessory.Data.Objects.SearchByEntityId(sid);
             if (obj == null) return;
-            var statusCount = ((IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
+            var statusCount = ((Dalamud.Game.ClientState.Objects.Types.IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
             var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
 
             var dur = 5000;

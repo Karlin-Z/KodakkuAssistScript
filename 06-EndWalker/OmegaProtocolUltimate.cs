@@ -19,7 +19,7 @@ using ECommons.GameFunctions;
 namespace MyScriptNamespace
 {
     
-    [ScriptType(name: "OmegaProtocolUltimate", territorys: [1122],guid: "625eb340-0811-4c37-b87c-c46fe5204940", version:"0.0.0.3",note: noteStr)]
+    [ScriptType(name: "OmegaProtocolUltimate", territorys: [1122],guid: "625eb340-0811-4c37-b87c-c46fe5204940", version:"0.0.0.4",note: noteStr)]
     public class OmegaProtocolUltimate
     {
         const string noteStr =
@@ -56,6 +56,11 @@ namespace MyScriptNamespace
         List<int> P3_TVBuff = [0, 0, 0, 0, 0, 0, 0, 0];
 
         List<int> P4Stack = [];
+
+        int P51_Eye = 0;
+        List<int> P51_Buff = [0, 0, 0, 0, 0, 0, 0, 0];
+        List<int> P51_Fist = [0, 0, 0, 0];
+        bool P51_FistDone = false;
 
         public enum P3SortEnum
         {
@@ -157,7 +162,7 @@ namespace MyScriptNamespace
                 idle=true;
                 var hPos=default(Vector3);
                 var lPos=default(Vector3);
-                if (PositionTo4Dir(P1_TowerPos[towerCount - 2], centre) < PositionTo4Dir(P1_TowerPos[towerCount - 1], centre))
+                if (RoundPositionTo4Dir(P1_TowerPos[towerCount - 2], centre) < RoundPositionTo4Dir(P1_TowerPos[towerCount - 1], centre))
                 {
                     hPos = P1_TowerPos[towerCount - 2];
                     lPos = P1_TowerPos[towerCount - 1];
@@ -193,8 +198,8 @@ namespace MyScriptNamespace
                 
                 idle = true;
                 List<int> isTower = [0, 0, 0, 0];
-                isTower[PositionTo4Dir(P1_TowerPos[towerCount - 2], centre)] = 1;
-                isTower[PositionTo4Dir(P1_TowerPos[towerCount - 1], centre)] = 1;
+                isTower[RoundPositionTo4Dir(P1_TowerPos[towerCount - 2], centre)] = 1;
+                isTower[RoundPositionTo4Dir(P1_TowerPos[towerCount - 1], centre)] = 1;
                 var my4Dir = meIsHigh ? isTower.IndexOf(0) : isTower.LastIndexOf(0);
                 var dealpos = RotatePoint(new(100, 0, 85), centre, float.Pi / 2 * my4Dir);
 
@@ -213,7 +218,7 @@ namespace MyScriptNamespace
             {
                 //北点 100,0,86
                 var myPos = accessory.Data.Objects.SearchByEntityId(accessory.Data.Me)?.Position??default;
-                var drot = (myPos - P1_TowerPos[towerCount - 2]).Length() < (myPos - P1_TowerPos[towerCount - 1]).Length() ? PositionTo4Dir(P1_TowerPos[towerCount - 2],centre) : PositionTo4Dir(P1_TowerPos[towerCount - 1], centre);
+                var drot = (myPos - P1_TowerPos[towerCount - 2]).Length() < (myPos - P1_TowerPos[towerCount - 1]).Length() ? RoundPositionTo4Dir(P1_TowerPos[towerCount - 2],centre) : RoundPositionTo4Dir(P1_TowerPos[towerCount - 1], centre);
                 var dealpos=RotatePoint(new(100,0,86),centre,float.Pi/2*drot);
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = "P1_循环程序_闲站位";
@@ -453,7 +458,7 @@ namespace MyScriptNamespace
             if ((pos - centre).Length() > 12) return;
             var c = accessory.Data.Objects.SearchById(sid);
             if (c == null) return;
-            var transformationID = ((IBattleChara)c).GetTransformationID();
+            var transformationID = ((Dalamud.Game.ClientState.Objects.Types.IBattleChara)c).GetTransformationID();
             if (@event["SourceDataId"] == "15714")
             {
                 //男
@@ -566,7 +571,7 @@ namespace MyScriptNamespace
                     var dp = accessory.Data.GetDefaultDrawProperties();
                     dp.Name = "P2_协同程序PT_五钢铁";
                     dp.Scale = new(10);
-                    dp.Owner = c.EntityId;
+                    dp.Owner = c.GameObjectId;
                     dp.Color = accessory.Data.DefaultDangerColor;
                     dp.DestoryAt = 11000;
                     accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
@@ -695,7 +700,7 @@ namespace MyScriptNamespace
             }
             var c = accessory.Data.Objects.Where(o => o.DataId == 15713).FirstOrDefault();
             if (c == null) return;
-            var dir8 = PositionTo8Dir(c!.Position, new(100, 0, 100));
+            var dir8 = RoundPositionTo8Dir(c!.Position, new(100, 0, 100));
             //accessory.Log.Debug($"P2_协同程序PT {dir8} {leftGroup.Contains(myindex)}");
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "P2_协同程序PT_分摊处理位置";
@@ -728,44 +733,31 @@ namespace MyScriptNamespace
             dp.DestoryAt = 7500;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
         }
-        [ScriptMethod(name: "P2_协同程序LB_刀光剑舞", eventType: EventTypeEnum.Tether, eventCondition: ["Id:0054"])]
+        [ScriptMethod(name: "P2_协同程序LB_刀光剑舞", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(3154[01])$"])]
         public void P2_协同程序LB_刀光剑舞(Event @event, ScriptAccessory accessory)
         {
             if (parse != 2.2) return;
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
-            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
-            lock (P2_刀光剑舞连线)
-            {
-                if (P2_刀光剑舞连线.ContainsKey(sid))
-                {
-                    accessory.Method.RemoveDraw($"P2_协同程序LB_刀光剑舞-{sid}-{P2_刀光剑舞连线[sid]}");
-                    P2_刀光剑舞连线[sid] = tid;
-                }
-                else
-                {
-                    P2_刀光剑舞连线.Add(sid, tid);
-                }
 
-                var dp = accessory.Data.GetDefaultDrawProperties();
-                dp.Name = $"P2_协同程序LB_刀光剑舞-{sid}-{tid}";
-                dp.Scale = new(40);
-                dp.Owner = sid;
-                dp.TargetObject = tid;
-                dp.Color = accessory.Data.DefaultDangerColor;
-                dp.DestoryAt = 15000;
-                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
-            }
-            
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = $"P2_协同程序LB_刀光剑舞-{sid}";
+            dp.Scale = new(40);
+            dp.Owner = sid;
+            dp.TargetResolvePattern = PositionResolvePatternEnum.TetherTarget;
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.DestoryAt = 8200;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
         }
-        [ScriptMethod(name: "P2_协同程序LB_刀光剑舞移除", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:31539"])]
-        public void P2_协同程序LB_刀光剑舞移除(Event @event, ScriptAccessory accessory)
-        {
-            if (parse != 2.2) return;
-            foreach (var item in P2_刀光剑舞连线)
-            {
-                accessory.Method.RemoveDraw($"P2_协同程序LB_刀光剑舞-{item.Key}-{item.Value}");
-            }
-        }
+        //[ScriptMethod(name: "P2_协同程序LB_刀光剑舞移除", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:31539"])]
+        //public void P2_协同程序LB_刀光剑舞移除(Event @event, ScriptAccessory accessory)
+        //{
+        //    if (parse != 2.2) return;
+        //    foreach (var item in P2_刀光剑舞连线)
+        //    {
+        //        accessory.Method.RemoveDraw($"P2_协同程序LB_刀光剑舞-{item.Key}-{item.Value}");
+        //    }
+        //}
         [ScriptMethod(name: "P2_协同程序LB_盾连击S", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:31527"])]
         public void P2_协同程序LB_盾连击S(Event @event, ScriptAccessory accessory)
         {
@@ -1552,7 +1544,7 @@ namespace MyScriptNamespace
                 rightGroup.Remove(change);
                 rightGroup.Add(4);
                 leftGroup.Remove(4);
-                rightGroup.Add(change);
+                leftGroup.Add(change);
             }
 
             Vector3 dealpos = leftGroup.Contains(myindex) ? new(96.5f, 0, 113) : new(103.5f, 0, 113);
@@ -1566,6 +1558,192 @@ namespace MyScriptNamespace
             dp.Color = accessory.Data.DefaultSafeColor;
             dp.DestoryAt = 5000;
             accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+        }
+        #endregion
+
+        #region P5
+        [ScriptMethod(name: "P5_开场_分P", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:31621"], userControl: false)]
+        public void P5_开场_分P(Event @event, ScriptAccessory accessory)
+        {
+            parse = 5.0;
+        }
+        [ScriptMethod(name: "P5_一运_分P", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:31624"], userControl: false)]
+        public void P5_一运_分P(Event @event, ScriptAccessory accessory)
+        {
+            parse = 5.1;
+            P51_Eye = 0;
+            P51_Buff = [0, 0, 0, 0, 0, 0, 0, 0];
+            P51_Fist = [0, 0, 0, 0];
+        }
+        [ScriptMethod(name: "P5_一运_眼睛记录", eventType: EventTypeEnum.EnvControl, eventCondition: ["Id:00020001"], userControl: false)]
+        public void P5_一运_眼睛记录(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 5.1) return;
+            P51_Eye = @event["Index"] switch
+            {
+                "00000001" => 0,
+                "00000002" => 1,
+                "00000003" => 2,
+                "00000004" => 3,
+                "00000005" => 4,
+                "00000006" => 5,
+                "00000007" => 6,
+                "00000008" => 7,
+                _ => 0
+
+            } ;
+        }
+        [ScriptMethod(name: "P5_一运_Buff记录", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:^(3442|3443|3440|3504)$"], userControl: false)]
+        public void P5_一运_Buff记录(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 5.1) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            var index = accessory.Data.PartyList.IndexOf(tid);
+            lock (P51_Buff)
+            {
+                P51_Buff[index] += @event["StatusID"] switch
+                {
+                    //3440 10 绿线
+                    //3504 20 蓝线
+                    //3442 100 近处世界
+                    //3443 200 远处世界
+                    "3440" => 10,
+                    "3504" => 20,
+                    "3442" => 100,
+                    "3443" => 200,
+                    _ => 0
+                };
+            }
+        }
+        [ScriptMethod(name: "P5_一运_连线记录", eventType: EventTypeEnum.Tether, eventCondition: ["Id:regex:^(00C9|00C8)$"], userControl: false)]
+        public void P5_一运_连线记录(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 5.1) return;
+            if (!ParseObjectId(@event["TargetId"], out var tid)) return;
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            var tindex = accessory.Data.PartyList.IndexOf(tid);
+            var sindex = accessory.Data.PartyList.IndexOf(sid);
+            lock (P51_Buff)
+            {
+                P51_Buff[tindex] += sindex;
+                P51_Buff[sindex] += tindex;
+            }
+        }
+        [ScriptMethod(name: "P5_一运_飞拳记录", eventType: EventTypeEnum.AddCombatant, eventCondition: ["DataId:regex:^(15709|15710)$"], userControl: false)]
+        public void P5_一运_飞拳记录(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 5.1) return;
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+            var rot = FloorPositionTo4Dir(pos, new(100, 0, 100));
+            lock (P51_Fist)
+            {
+                P51_Fist[rot] += @event["DataId"] == "15709" ? 1 : 10;
+            }
+
+
+        }
+        [ScriptMethod(name: "P5_一运_拉线预站位位置", eventType: EventTypeEnum.EnvControl, eventCondition: ["Id:00020001"])]
+        public async void P5_一运_拉线预站位位置(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 5.1) return;
+            await Task.Delay(100);
+
+
+            var StartList = GetP51StartList();
+
+
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            Vector3 dealpos = StartList.IndexOf(myindex) switch
+            {
+                0 => new Vector3(088.0f, 0, 088.0f),
+                1 => new Vector3(088.0f, 0, 112.0f),
+                2 => new Vector3(094.0f, 0, 088.0f),
+                3 => new Vector3(094.0f, 0, 112.0f),
+                4 => new Vector3(113.0f, 0, 098.5f),
+                5 => new Vector3(113.0f, 0, 101.5f),
+                6 => new Vector3(109.0f, 0, 092.0f),
+                7 => new Vector3(109.0f, 0, 108.0f),
+                _ => default
+            } ;
+            
+
+            if (dealpos == default) return;
+
+            dealpos = RotatePoint(dealpos, new(100, 0, 100), float.Pi / 4 * P51_Eye);
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = "P5_一运_拉线预站位位置";
+            dp.Scale = new(2);
+            dp.Owner = accessory.Data.Me;
+            dp.TargetPosition = dealpos;
+            dp.ScaleMode |= ScaleMode.YByDistance;
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.DestoryAt = 8500;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+        }
+        [ScriptMethod(name: "P5_一运_飞拳站位", eventType: EventTypeEnum.AddCombatant, eventCondition: ["DataId:regex:^(15709)$"])]
+        public async void P5_一运_飞拳站位(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 5.1) return;
+            lock (this)
+            {
+                if (P51_FistDone) return;
+                P51_FistDone = true;
+            }
+            await Task.Delay(50);
+
+            var eye4dir = P51_Eye / 2;
+
+            var StartList = GetP51StartList();
+        }
+        private List<int> GetP51StartList()
+        {
+            List<int> rst = [];
+            List<int> d3htdhList = [6, 2, 0, 1, 4, 5, 7, 3];
+
+            //3440 10 绿线
+            //3504 20 蓝线
+            //3442 100 近处世界
+            //3443 200 远处世界
+
+            //绿线组
+            List<int> greenTetherGroup = [];
+            for (int i = 0; i < 8; i++)
+            {
+                var index = d3htdhList[i];
+                var b = P51_Buff[index] % 100;
+                if (b / 10 == 1 && !greenTetherGroup.Contains(index))
+                {
+                    greenTetherGroup.Add(index);
+                    greenTetherGroup.Add(b % 10);
+                }
+            }
+
+            // 蓝线组
+            List<int> blueTetherGroup = [];
+            //for (int i = 0; i < 8; i++)
+            //{
+            //    if (P51_Buff[i] /100==2)
+            //    {
+            //        blueTetherGroup.Add(i);
+            //        blueTetherGroup.Add(P51_Buff[i] % 10);
+            //    }
+            //}
+            for (int i = 0; i < 8; i++)
+            {
+                var index = d3htdhList[i];
+                var b = P51_Buff[index] % 100;
+                if (b / 10 == 2 && !blueTetherGroup.Contains(index))
+                {
+                    blueTetherGroup.Add(index);
+                    blueTetherGroup.Add(b % 10);
+                }
+            }
+
+            rst.AddRange(greenTetherGroup);
+            rst.AddRange(blueTetherGroup);
+            return rst;
         }
         #endregion
 
@@ -1584,15 +1762,27 @@ namespace MyScriptNamespace
                 return false;
             }
         }
-        private int PositionTo4Dir(Vector3 point, Vector3 centre)
+        private int RoundPositionTo4Dir(Vector3 point, Vector3 centre)
         {
             var r = Math.Round(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
             return (int)r;
         }
-        private int PositionTo8Dir(Vector3 point, Vector3 centre)
+        private int RoundPositionTo8Dir(Vector3 point, Vector3 centre)
         {
             // Dirs: N = 0, NE = 1, ..., NW = 7
             var r = Math.Round(4 - 4 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 8;
+            return (int)r;
+
+        }
+        private int FloorPositionTo4Dir(Vector3 point, Vector3 centre)
+        {
+            var r = Math.Floor(2 - 2 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 4;
+            return (int)r;
+        }
+        private int FloorPositionTo8Dir(Vector3 point, Vector3 centre)
+        {
+            // Dirs: N = 0, NE = 1, ..., NW = 7
+            var r = Math.Floor(4 - 4 * Math.Atan2(point.X - centre.X, point.Z - centre.Z) / Math.PI) % 8;
             return (int)r;
 
         }
