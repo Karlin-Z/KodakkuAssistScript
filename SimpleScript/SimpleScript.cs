@@ -12,9 +12,21 @@ namespace MyScriptNamespace
     /// territorys specifies the regions where this trigger is effective. If left empty, it will be effective in all regions.
     /// Classes with the same GUID will be considered the same trigger. Please ensure your GUID is unique and does not conflict with others.
     /// </summary>
-    [ScriptType(name: "SimpleScript", territorys: [],guid: "d3b6a9b4-1e0e-4e0c-b7c7-ff1fce0e6cf2",version:"0.0.0.1")]
+    [ScriptType(name: "SimpleScript", territorys: [179, 979],guid: "d3b6a9b4-1e0e-4e0c-b7c7-ff1fce0e6cf2",version:"0.0.0.3",author:"Karlin", note: noteStr,updateInfo:updateInfoStr)]
     public class SimpleScript
     {
+        const string noteStr =
+        """
+        这是一个提示文本.
+        他有多行显示.
+        请在这里放置你的提示文本
+        """;
+        const string updateInfoStr =
+        """
+        这里是更新信息.
+        他有多行显示.
+        请在这里放置你的更新信息
+        """;
         /// <summary>
         /// note will be displayed to the user as a tooltip.
         /// </summary>
@@ -60,19 +72,36 @@ namespace MyScriptNamespace
         public void PrintInfo(Event @event, ScriptAccessory accessory)
         {
             n++;
-            accessory.Method.SendChat($"{@event["SourceId"]} {n}-th use the Medica II");
+            accessory.Method.SendChat($"/e {@event["SourceId"]} {n}-th use the Medica II");
             accessory.Log.Debug($"Prop2 is {prop2}");
             accessory.Log.Debug($"enum is {enumSetting}");
         }
 
-        [ScriptMethod(name: "Test Draw", eventType: EventTypeEnum.ActionEffect,eventCondition: ["ActionId:124"])]
+        [ScriptMethod(name: "Test Draw", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:124"])]
         public void DrawCircle(Event @event, ScriptAccessory accessory)
         {
+            var sid = Convert.ToUInt32(@event["SourceId"], 16);
+
             var prop = accessory.Data.GetDefaultDrawProperties();
-            prop.Owner = Convert.ToUInt32(@event["SourceId"],16);
-            prop.DestoryAt = 2000;
-            prop.Color=color.V4;
-            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, prop);
+            prop.Owner = accessory.Data.Me;
+            prop.DestoryAt = 100000;
+            prop.Color = accessory.Data.DefaultDangerColor;
+            prop.ScaleMode |= ScaleMode.YByDistance;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Fan, prop);
+
+            
+        }
+
+        [ScriptMethod(name: "Test Suppress", eventType: EventTypeEnum.Waymark)]
+        public void TestSuppress(Event @event, ScriptAccessory accessory)
+        {
+            n++;
+            accessory.Log.Debug($"WayMark {n} {@event.EventTriggerSource}");
+            uint id = 0x40000001;
+            if(accessory.Data.EnmityList.TryGetValue(id, out var objs))
+            {
+                var firstId = objs[0];
+            }
         }
 
         [ScriptMethod(name: "Unconfigurable Method", eventType: EventTypeEnum.ActionEffect,eventCondition: ["ActionId:124"],userControl:false)]
