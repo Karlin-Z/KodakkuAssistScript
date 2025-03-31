@@ -17,13 +17,19 @@ using KodakkuAssist.Module.GameOperate;
 using System.Security.Cryptography;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using KodakkuAssist.Module.Draw.Manager;
-using Dalamud.Game.ClientState.Objects.Types;
+using KodakkuAssist.Module.GameEvent.Types;
+using KodakkuAssist.Data;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.5", author: "Karlin")]
+    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.6", author: "Karlin", updateInfo: UpdateInfo)]
     public class M3s绘图绘图
     {
+        private const string UpdateInfo =
+        """
+        修复鸭鸭0.4.1.1后，炸弹相关不炸的问题。
+        """;
+        
         [UserSetting("按照TNTN顺序安排撞线位置")]
         public bool TNTN_Fuse { get; set; } =false;
 
@@ -548,7 +554,7 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             var obj= accessory.Data.Objects.SearchByEntityId(sid);
             if(obj == null) return;
-            var statusCount= ((Dalamud.Game.ClientState.Objects.Types.IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
+            var statusCount= ((IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
 
             var dur = 5000;
             var shorDelay =parse==1? 12000:19000;
@@ -571,7 +577,7 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             var obj = accessory.Data.Objects.SearchByEntityId(sid);
             if (obj == null) return;
-            var statusCount = ((Dalamud.Game.ClientState.Objects.Types.IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
+            var statusCount = ((IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
             var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
 
             var dur = 5000;
