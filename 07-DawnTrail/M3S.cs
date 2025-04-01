@@ -17,11 +17,11 @@ using KodakkuAssist.Module.GameOperate;
 using System.Security.Cryptography;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using KodakkuAssist.Module.Draw.Manager;
-using Dalamud.Game.ClientState.Objects.Types;
+using KodakkuAssist.Data;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.6", author: "Karlin",updateInfo:updateInfoStr)]
+    [ScriptType(name: "M3s绘图", territorys:[1230],guid: "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5", version:"0.0.0.7", author: "Karlin",updateInfo:updateInfoStr)]
     public class M3s绘图绘图
     {
         const string updateInfoStr =
@@ -552,7 +552,7 @@ namespace KarlinScriptNamespace
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
             var obj= accessory.Data.Objects.SearchByEntityId(sid);
             if(obj == null) return;
-            var statusCount= ((Dalamud.Game.ClientState.Objects.Types.IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
+            var statusCount= ((IBattleChara)obj).StatusList.Where(status => status.StatusId == 4016).Count();
 
             var dur = 5000;
             var shorDelay =parse==1? 12000:19000;
