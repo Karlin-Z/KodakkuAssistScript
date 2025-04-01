@@ -28,12 +28,12 @@
   {
     "Name": "M3s绘图",
     "Guid": "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5",
-    "Version": "0.0.0.5",
+    "Version": "0.0.0.6",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M3S.cs",
     "Note": "",
-    "UpdateInfo": "适配新版插件",
+    "UpdateInfo": "修复P2地面炸弹处理位置因插件更新导致的问题",
     "TerritoryIds": [
       1230
     ]
