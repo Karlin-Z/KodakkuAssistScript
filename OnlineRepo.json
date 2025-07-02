@@ -143,5 +143,18 @@
     "TerritoryIds": [
       144
     ]
+  },
+  {
+    "Name": "M5s绘图",
+    "Guid": "ecf3365e-8d21-5daa-0329-8aa33ee30778",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "Repo": "",
+    "DownloadUrl": "",
+    "Note": "",
+    "UpdateInfo": "",
+    "TerritoryIds": [
+      1257
+    ]
   }
 ]
