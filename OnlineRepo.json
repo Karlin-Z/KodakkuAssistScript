@@ -156,5 +156,18 @@
     "TerritoryIds": [
       1257
     ]
+  },
+  {
+    "Name": "M6s绘图",
+    "Guid": "0146ff9b-1118-44e1-7386-e3b0795e7b60",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "Repo": "",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/refs/heads/main/07-DawnTrail/M6s.cs",
+    "Note": "",
+    "UpdateInfo": "",
+    "TerritoryIds": [
+      1259
+    ]
   }
 ]
