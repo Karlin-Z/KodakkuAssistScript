@@ -23,7 +23,7 @@ using NAudio.Gui;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M6s绘图", territorys: [1259], guid: "0146ff9b-1118-44e1-7386-e3b0795e7b60", version: "0.0.0.1", author: "Karlin")]
+    [ScriptType(name: "M6s绘图", territorys: [1259], guid: "0146ff9b-1118-44e1-7386-e3b0795e7b60", version: "0.0.0.2", author: "Karlin")]
     public class M6sDraw
     {
         public enum zoo2FishEnum
@@ -258,7 +258,7 @@ namespace KarlinScriptNamespace
             if (parse != 31) return;
             if (accessory.Data.PartyList.IndexOf(accessory.Data.Me) == 0) return;
             accessory.Method.TTS("打羊");
-            accessory.Method.SelectTarget((uint)@event.TargetId);
+            accessory.Method.SelectTarget((uint)@event.SourceId);
         }
 
         [ScriptMethod(name: "P3 动物园 第二轮拉怪位置", eventType: EventTypeEnum.Targetable, eventCondition: ["Targetable:True", "DataId:18346"],suppress:1000)]
@@ -288,7 +288,7 @@ namespace KarlinScriptNamespace
             if (pos == default) return;
             if (zoo2Fish== zoo2FishEnum.Right && pos.X>100)
             {
-                accessory.Method.SelectTarget((uint)@event.TargetId);
+                accessory.Method.SelectTarget((uint)@event.SourceId);
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = $"P3 动物园 第二轮鱼引导位置";
                 dp.Color = accessory.Data.DefaultSafeColor;
@@ -300,7 +300,7 @@ namespace KarlinScriptNamespace
             }
             if (zoo2Fish == zoo2FishEnum.Left && pos.X < 100)
             {
-                accessory.Method.SelectTarget((uint)@event.TargetId);
+                accessory.Method.SelectTarget((uint)@event.SourceId);
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = $"P3 动物园 第二轮鱼引导位置";
                 dp.Color = accessory.Data.DefaultSafeColor;
@@ -355,9 +355,12 @@ namespace KarlinScriptNamespace
         {
             if (parse != 33) return;
             if (accessory.Data.PartyList.IndexOf(accessory.Data.Me) == 1) return;
-
+            Task.Delay(500).ContinueWith(t =>
+            {
+                accessory.Method.SelectTarget((uint)@event.SourceId);
+            });
             accessory.Method.TTS("打马");
-            accessory.Method.SelectTarget((uint)@event.TargetId);
+            
         }
 
         [ScriptMethod(name: "P3 动物园 第三轮眩晕马提示", eventType: EventTypeEnum.Targetable, eventCondition: ["Targetable:True", "DataId:18345"])]
@@ -471,7 +474,7 @@ namespace KarlinScriptNamespace
             if (pos == default) return;
             if (myindex==7 && pos.X > 100)
             {
-                accessory.Method.SelectTarget((uint)@event.TargetId);
+                accessory.Method.SelectTarget((uint)@event.SourceId);
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = $"P3 动物园 第四轮鱼引导位置";
                 dp.Color = accessory.Data.DefaultSafeColor;
@@ -483,7 +486,7 @@ namespace KarlinScriptNamespace
             }
             if (myindex == 6 && pos.X < 100)
             {
-                accessory.Method.SelectTarget((uint)@event.TargetId);
+                accessory.Method.SelectTarget((uint)@event.SourceId);
                 var dp = accessory.Data.GetDefaultDrawProperties();
                 dp.Name = $"P3 动物园 第四轮鱼引导位置";
                 dp.Color = accessory.Data.DefaultSafeColor;
@@ -536,6 +539,23 @@ namespace KarlinScriptNamespace
                     accessory.Method.TextInfo($"下踢", 2000);
                 });
             }
+        }
+
+        [ScriptMethod(name: "P3 动物园 结束剑连线", eventType: EventTypeEnum.Tether, eventCondition: ["Id:regex:^((013F)|(0140))",])]
+        public void 剑连线(Event @event, ScriptAccessory accessory)
+        {
+            //if(parse!=34) return;
+
+            var sobj= accessory.Data.Objects.SearchById(@event.SourceId);
+            if(sobj == null) return;
+            if (sobj.DataId != 18338) return;
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = $"P3 动物园 结束剑连线";
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Scale = new(7,45);
+            dp.Owner = @event.SourceId;
+            dp.DestoryAt = 7000;
+            accessory.Method.SendDraw(DrawModeEnum.Vfx, DrawTypeEnum.Rect, dp);
         }
 
         private static bool ParseObjectId(string? idStr, out uint id)
