@@ -23,9 +23,24 @@ using NAudio.Gui;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M6s绘图", territorys: [1259], guid: "0146ff9b-1118-44e1-7386-e3b0795e7b60", version: "0.0.0.2", author: "Karlin")]
+    [ScriptType(name: "M6s绘图", territorys: [1259], guid: "0146ff9b-1118-44e1-7386-e3b0795e7b60", version: "0.0.0.3", author: "Karlin", note: noteStr, updateInfo: updateInfoStr)]
     public class M6sDraw
     {
+        const string noteStr =
+        """
+        M6S 扩充绘图脚本
+        目前包含以下内容:
+        1.扩充绘制（非所有机制，请配合Usami脚本使用）
+        2.动物园阶段T拉怪路线指示
+        3.动物园第二轮引导鱼自动选择（须设置引导左右），第四轮鱼自动选择（根据职能分配）
+        4.动物园阶段近战自动选马
+        """;
+        const string updateInfoStr =
+        """
+        1.增加P4开场t拉怪指示
+        2.增加p4 引导扇形、飞翎羽、啪叽慕斯怪分摊绘制
+        3.增加踩塔提示TTS
+        """;
         public enum zoo2FishEnum
         {
             None,
@@ -355,7 +370,7 @@ namespace KarlinScriptNamespace
         {
             if (parse != 33) return;
             if (accessory.Data.PartyList.IndexOf(accessory.Data.Me) == 1) return;
-            Task.Delay(500).ContinueWith(t =>
+            Task.Delay(50).ContinueWith(t =>
             {
                 accessory.Method.SelectTarget((uint)@event.SourceId);
             });
@@ -447,7 +462,7 @@ namespace KarlinScriptNamespace
                 dp.Name = $"P3 动物园 第三轮拉怪位置 MT 2";
                 dp.Color = accessory.Data.DefaultDangerColor;
                 dp.Position = new(100, 0, 110);
-                dp.TargetPosition = new(90, 0, 105);
+                dp.TargetPosition = new(110, 0, 105);
                 dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.DestoryAt = 5000;
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
@@ -456,7 +471,7 @@ namespace KarlinScriptNamespace
                 dp.Name = $"P3 动物园 第三轮拉怪位置 MT 3";
                 dp.Color = accessory.Data.DefaultSafeColor;
                 dp.Owner = accessory.Data.Me;
-                dp.TargetPosition = new(90, 0, 105);
+                dp.TargetPosition = new(110, 0, 105);
                 dp.ScaleMode |= ScaleMode.YByDistance;
                 dp.Delay = 5000;
                 dp.DestoryAt = 8000;
@@ -556,6 +571,83 @@ namespace KarlinScriptNamespace
             dp.Owner = @event.SourceId;
             dp.DestoryAt = 7000;
             accessory.Method.SendDraw(DrawModeEnum.Vfx, DrawTypeEnum.Rect, dp);
+        }
+
+        [ScriptMethod(name: "P4 山川 阶段转换", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:42595"], userControl: false)]
+        public void P4_PhaseChange(Event @event, ScriptAccessory accessory)
+        {
+            parse = 40;
+        }
+        [ScriptMethod(name: "P4 山川 拉怪指示", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:42595"])]
+        public void P4_山川_拉怪指示(Event @event, ScriptAccessory accessory)
+        {
+            //13000ms
+            if (accessory.Data.PartyList.IndexOf(accessory.Data.Me) != 0) return;
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = $"P4 山川 拉怪指示";
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.Owner = accessory.Data.Me;
+            dp.TargetPosition = new(90,0,108);
+            dp.ScaleMode |= ScaleMode.YByDistance;
+            dp.DestoryAt = 13000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+            
+        }
+
+        [ScriptMethod(name: "P4 啪叽慕斯怪 双人分摊", eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:013C"])]
+        public void P4_啪叽慕斯怪(Event @event, ScriptAccessory accessory)
+        {
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = $"P4 啪叽慕斯怪 双人分摊";
+            dp.Scale = new(5);
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.Owner = @event.TargetId;
+            dp.DestoryAt = 12000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+        }
+        [ScriptMethod(name: "P4 慕斯慕斯冲 近四人扇形", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(42682)$"])]
+        public void P4_慕斯慕斯冲(Event @event, ScriptAccessory accessory)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"P4 慕斯慕斯冲 近四人扇形 {i}";
+                dp.Scale = new(60);
+                dp.Radian = MathF.PI / 4;
+                dp.Color = accessory.Data.DefaultDangerColor;
+                dp.Owner = @event.SourceId;
+                dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
+                dp.TargetOrderIndex = (uint)i+1;
+                dp.DestoryAt = 4500;
+                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
+            }
+        }
+        [ScriptMethod(name: "P4 慕斯慕斯冲 近四人扇形 诱导提醒", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(42682)$"])]
+        public void P4_慕斯慕斯冲诱导提醒(Event @event, ScriptAccessory accessory)
+        {
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            if(myindex==2 || myindex==3 || myindex== 6 || myindex == 7) return;
+            accessory.Method.TTS($"塔外诱导");
+            accessory.Method.TextInfo($"塔外诱导", 6000);
+        }
+        [ScriptMethod(name: "P4 糖糖闪雷 飞翎羽", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(42653)$"])]
+        public void P4_糖糖闪雷(Event @event, ScriptAccessory accessory)
+        {
+            var pos = JsonConvert.DeserializeObject<Vector3>(@event["EffectPosition"]);
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = $"P4 糖糖闪雷 飞翎羽";
+            dp.Scale = new(3);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Position = pos;
+            dp.DestoryAt = 3000;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+        }
+        [ScriptMethod(name: "P4 糖糖闪雷 飞翎羽踩塔提醒", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(42653)$"],suppress:1000)]
+        public void P4_飞翎羽踩塔提醒(Event @event, ScriptAccessory accessory)
+        {
+            accessory.Method.TTS($"踩塔");
+            accessory.Method.TextInfo($"踩塔", 5000);
         }
 
         private static bool ParseObjectId(string? idStr, out uint id)
