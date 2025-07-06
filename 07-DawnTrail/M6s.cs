@@ -23,7 +23,7 @@ using NAudio.Gui;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M6s绘图", territorys: [1259], guid: "0146ff9b-1118-44e1-7386-e3b0795e7b60", version: "0.0.0.3", author: "Karlin", note: noteStr, updateInfo: updateInfoStr)]
+    [ScriptType(name: "M6s绘图", territorys: [1259], guid: "0146ff9b-1118-44e1-7386-e3b0795e7b60", version: "0.0.0.4", author: "Karlin", note: noteStr, updateInfo: updateInfoStr)]
     public class M6sDraw
     {
         const string noteStr =
@@ -40,6 +40,7 @@ namespace KarlinScriptNamespace
         1.增加P4开场t拉怪指示
         2.增加p4 引导扇形、飞翎羽、啪叽慕斯怪分摊绘制
         3.增加踩塔提示TTS
+        4.增加火山阶段翅膀飞行预测，增加倒数。
         """;
         public enum zoo2FishEnum
         {
@@ -648,6 +649,54 @@ namespace KarlinScriptNamespace
         {
             accessory.Method.TTS($"踩塔");
             accessory.Method.TextInfo($"踩塔", 5000);
+        }
+        [ScriptMethod(name: "P4 火山飞行预测", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:4450"])]
+        public void P4_火山飞行预测(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 40) return;
+            if (@event.TargetId != accessory.Data.Me) return;
+
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = $"P4_火山飞行预测";
+            dp.Scale = new(3, 34);
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.Owner = accessory.Data.Me;
+            dp.DestoryAt = 10000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+        }
+        [ScriptMethod(name: "P4 火山飞行倒数", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:4450"])]
+        public void P4_火山飞行倒数(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 40) return;
+            if (@event.TargetId != accessory.Data.Me) return;
+
+            Task.Delay(5000).ContinueWith(t =>
+            {
+                if (parse != 40) return;
+                accessory.Method.TextInfo($"5秒后飞行", 5000);
+                accessory.Method.TTS("5");
+            });
+            Task.Delay(6000).ContinueWith(t =>
+            {
+                if (parse != 40) return;
+                accessory.Method.TTS("4");
+            });
+            Task.Delay(7000).ContinueWith(t =>
+            {
+                if (parse != 40) return;
+                accessory.Method.TTS("3");
+            });
+            Task.Delay(8000).ContinueWith(t =>
+            {
+                if (parse != 40) return;
+                accessory.Method.TTS("2");
+            });
+            Task.Delay(9000).ContinueWith(t =>
+            {
+                if (parse != 40) return;
+                accessory.Method.TTS("1");
+            });
+
         }
 
         private static bool ParseObjectId(string? idStr, out uint id)

@@ -160,12 +160,12 @@
   {
     "Name": "M6s绘图",
     "Guid": "0146ff9b-1118-44e1-7386-e3b0795e7b60",
-    "Version": "0.0.0.3",
+    "Version": "0.0.0.4",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/refs/heads/main/07-DawnTrail/M6s.cs",
     "Note": "M6S 扩充绘图脚本\r\n目前包含以下内容:\r\n1.扩充绘制（非所有机制，请配合Usami脚本使用）\r\n2.动物园阶段T拉怪路线指示\r\n3.动物园第二轮引导鱼自动选择（须设置引导左右），第四轮鱼自动选择（根据职能分配）\r\n4.动物园阶段近战自动选马",
-    "UpdateInfo": "1.增加P4开场t拉怪指示\r\n2.增加p4 引导扇形、飞翎羽、啪叽慕斯怪分摊绘制\r\n3.增加踩塔提示TTS",
+    "UpdateInfo": "1.增加P4开场t拉怪指示\r\n2.增加p4 引导扇形、飞翎羽、啪叽慕斯怪分摊绘制\r\n3.增加踩塔提示TTS\r\n4.增加火山阶段翅膀飞行预测，增加倒数。",
     "TerritoryIds": [
       1259
     ]
