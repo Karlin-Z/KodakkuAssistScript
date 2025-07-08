@@ -147,12 +147,12 @@
   {
     "Name": "M5s绘图",
     "Guid": "ecf3365e-8d21-5daa-0329-8aa33ee30778",
-    "Version": "0.0.0.1",
+    "Version": "0.0.0.2",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/refs/heads/main/07-DawnTrail/M5s.cs",
     "Note": "",
-    "UpdateInfo": "",
+    "UpdateInfo": "1.增加九字切地火绘图\r\n2.增加俄罗斯方块安全区绘图",
     "TerritoryIds": [
       1257
     ]

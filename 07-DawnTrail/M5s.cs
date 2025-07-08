@@ -21,7 +21,7 @@ using System.Threading;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M5s绘图", territorys: [1257], guid: "ecf3365e-8d21-5daa-0329-8aa33ee30778", version: "0.0.0.1", author: "Karlin", note: noteStr, updateInfo: updateInfoStr)]
+    [ScriptType(name: "M5s绘图", territorys: [1257], guid: "ecf3365e-8d21-5daa-0329-8aa33ee30778", version: "0.0.0.2", author: "Karlin", note: noteStr, updateInfo: updateInfoStr)]
     public class M5sDraw
     {
         const string noteStr =
@@ -30,7 +30,8 @@ namespace KarlinScriptNamespace
         """;
         const string updateInfoStr =
         """
-        
+        1.增加九字切地火绘图
+        2.增加俄罗斯方块安全区绘图
         """;
 
         [UserSetting("左右刀分摊延迟显示时间")]
@@ -42,6 +43,7 @@ namespace KarlinScriptNamespace
         private ulong BossId;
         private bool isHealerStack;
         private int fireSafePoint = 0;
+        private int fireCount = 0;
         private bool spotLightClockwise;
         private List<uint> flipDir=[];
         private List<DateTime> wavelengthBuffEndTime = [default, default, default, default, default, default, default, default];
@@ -222,6 +224,7 @@ namespace KarlinScriptNamespace
         public void 舞会阶段重置(Event @event, ScriptAccessory accessory)
         {
             fireSafePoint = 0;
+            fireCount = 0;
             parse ++;
             SpotlightResetEvent = new(false);
             BurnBuffResetEvent = new(false);
@@ -240,6 +243,31 @@ namespace KarlinScriptNamespace
         {
             if (fireSafePoint != 0) return;
             fireSafePoint = @event["Flag"] == "2" ? 2 : 1;
+        }
+        [ScriptMethod(name: "地火绘图", eventType: EventTypeEnum.EnvControl, eventCondition: ["Index:3", "Flag:regex:^(8|128)$"])]
+        public void 地火绘图(Event @event, ScriptAccessory accessory)
+        {
+            fireCount ++;
+            accessory.Log.Debug($"{parse} {fireCount}");
+            if (parse == 1 && fireCount == 10) return;
+            if (parse == 4 && fireCount == 8) return;
+            var wn = @event["Flag"]=="8";
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    var xOffset = wn == (i % 2 == 0) ? 5 : 0;
+                    Vector3 pos = new(85.0f + j * 10 + xOffset, 0, 82.5f + i * 5);
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"M5s 地火绘图 第{fireCount+1}轮 {j}{i}";
+                    dp.Position = pos;
+                    dp.Scale = new(5);
+                    dp.Rotation = -float.Pi / 2;
+                    dp.DestoryAt = 4000;
+                    dp.Color = accessory.Data.DefaultDangerColor.WithW(2);
+                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
+                }
+            }
         }
         [ScriptMethod(name: "第一次燃起来Buff处理位置", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:4461"])]
         public void 第一次燃起来Buff处理位置(Event @event, ScriptAccessory accessory)
@@ -580,6 +608,12 @@ namespace KarlinScriptNamespace
             });
 
         }
+        [ScriptMethod(name: "舞浪全开拉怪TTS", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(42836)$"])]
+        public void 舞浪全开拉怪TTS(Event @event, ScriptAccessory accessory)
+        {
+            accessory.Method.TTS("拉怪南");
+            accessory.Method.TextInfo("拉怪南", 5000);
+        }
         [ScriptMethod(name: "分身左右刀", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(42858)$"])]
         public void 分身左右刀(Event @event, ScriptAccessory accessory)
         {
@@ -917,6 +951,50 @@ namespace KarlinScriptNamespace
                 accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
             }
 
+        }
+        [ScriptMethod(name: "俄罗斯方块地火安全区绘图", eventType: EventTypeEnum.EnvControl, eventCondition: ["Index:4", "Flag:regex:^(128|512)$"])]
+        public void 俄罗斯方块地火安全区绘图(Event @event, ScriptAccessory accessory)
+        {
+            var dur = 2058;
+            var left = @event["Flag"] == "128";
+            for (int i = 0; i < 15; i++)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"M5s 俄罗斯方块地火安全区绘图 第{i}轮 1";
+                dp.Position = new(left ? 87.5f : 112.5f, 0, 60.0f + i * 5);
+                dp.Scale = new(5,25);
+                dp.Delay = i == 0 ? 0 : 3000 + (i - 1) * dur;
+                dp.DestoryAt = i == 0 ? 3000 : dur;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Rect, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"M5s 俄罗斯方块地火安全区绘图 第{i}轮 2";
+                dp.Position = new(92.5f, 0, 45.0f + i * 5);
+                dp.Scale = new(5, 20);
+                dp.Delay = i == 0 ? 0 : 3000 + (i - 1) * dur;
+                dp.DestoryAt = i == 0 ? 3000 : dur;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Rect, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"M5s 俄罗斯方块地火安全区绘图 第{i}轮 3";
+                dp.Position = new(left ? 102.5f : 97.5f, 0, 60.0f + i * 5);
+                dp.Scale = new(5, 25);
+                dp.Delay = i == 0 ? 0 : 3000 + (i - 1) * dur;
+                dp.DestoryAt = i == 0 ? 3000 : dur;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Rect, dp);
+
+                dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"M5s 俄罗斯方块地火安全区绘图 第{i}轮 4";
+                dp.Position = new(107.5f, 0, 45.0f + i * 5);
+                dp.Scale = new(5, 20);
+                dp.Delay = i == 0 ? 0 : 3000 + (i - 1) * dur;
+                dp.DestoryAt = i == 0 ? 3000 : dur;
+                dp.Color = accessory.Data.DefaultSafeColor;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Rect, dp);
+            }
         }
         [ScriptMethod(name: "太空步阶段重置", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:42847"], userControl: false)]
         public void 太空步阶段重置(Event @event, ScriptAccessory accessory)
