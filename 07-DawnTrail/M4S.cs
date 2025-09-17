@@ -9,9 +9,8 @@ using Dalamud.Memory.Exceptions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommons;
 using System.Linq;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using KodakkuAssist.Module.GameOperate;
 using System.Security.Cryptography;
@@ -20,6 +19,7 @@ using System.ComponentModel;
 using System.DirectoryServices.ActiveDirectory;
 using System.Collections;
 using System.Text;
+using KodakkuAssist.Extensions;
 
 namespace KarlinScriptNamespace
 {
@@ -41,7 +41,7 @@ namespace KarlinScriptNamespace
         int spreadStackCount = 0;
         float fieldLaserDis;
 
-        int[] lightingCounts = [0, 0, 0, 0, 0, 0, 0, 0];
+        List<int> lightingCounts = [0, 0, 0, 0, 0, 0, 0, 0];
         List<bool> long3999 = [false, false, false, false, false, false, false, false];
         int floorSpreadCount = 0;
 
@@ -56,7 +56,7 @@ namespace KarlinScriptNamespace
         List<uint> TetherLighting = [];
 
 
-        int[] FloorFire = [0, 0, 0];
+        List<int> FloorFire = [0, 0, 0];
         string storeSkill = "";
         bool southSafe1st;
         bool southSafe2nd;
@@ -696,14 +696,13 @@ namespace KarlinScriptNamespace
         {
             lock (this)
             {
+                accessory.Method.SendChat($"/e Buff3999 {DateTime.Now:HH:mm:ss:ffff}");
                 if (!ParseObjectId(@event["TargetId"], out var tid)) return;
                 if (!int.TryParse(@event["DurationMilliseconds"], out var dur)) return;
                 var index = accessory.Data.PartyList.IndexOf(tid);
                 if (index == -1) return;
                 long3999[index] = dur > 30000;
             }
-            
-
         }
 
         [ScriptMethod(name: "地板分散位置", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:38351"])]
@@ -711,10 +710,11 @@ namespace KarlinScriptNamespace
         {
             lock (this)
             {
+                
                 var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
                 var centre = new Vector3(100, 0, 100);
                 if (MathF.Abs((pos - centre).Length() - 16) > 1) return;
-
+                accessory.Method.SendChat($"/e 二雷处理 {DateTime.Now:HH:mm:ss:ffff}");
                 floorSpreadCount++;
                 
                 var dir4 = PositionRoundTo4Dir(pos, centre);
@@ -731,6 +731,7 @@ namespace KarlinScriptNamespace
                 }
                 if (DebugMode)
                     accessory.Method.SendChat($"/e 二雷 第{floorSpreadCount}轮 北{dir4} Me[{myIndex}号|{(long3999[myIndex]?"长":"短")}|{lightingCounts[myIndex]}次|{(meIsSmall ? "小" : "大")}] Buff[{sb}]");
+
 
                 var dealPos = new Vector3();
                 if (meIsSmall)
@@ -1100,7 +1101,7 @@ namespace KarlinScriptNamespace
                 var none1 = TetherBoom.IndexOf(0);
                 var none2 = TetherBoom.LastIndexOf(0);
 
-                int[] sort = [4,6,2,3,7,5];
+                List<int> sort = [4,6,2,3,7,5];
                 if (sort.IndexOf(none1) > sort.IndexOf(none2))
                 {
                     (none2, none1) = (none1, none2);

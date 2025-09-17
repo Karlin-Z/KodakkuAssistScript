@@ -9,13 +9,13 @@ using Dalamud.Memory.Exceptions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommons;
 using System.Linq;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using KodakkuAssist.Module.GameOperate;
 using System.Security.Cryptography;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using KodakkuAssist.Extensions;
 
 namespace KarlinScriptNamespace
 {
@@ -84,7 +84,6 @@ namespace KarlinScriptNamespace
         {
             
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
-
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"直线斩";
             dp.Scale = new(14,40);

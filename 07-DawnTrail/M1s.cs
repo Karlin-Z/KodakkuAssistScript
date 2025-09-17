@@ -9,11 +9,11 @@ using Dalamud.Memory.Exceptions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommons;
 using System.Linq;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using KodakkuAssist.Module.GameOperate;
+using KodakkuAssist.Extensions;
 
 
 namespace KarlinScriptNamespace

@@ -6,13 +6,13 @@ using KodakkuAssist.Module.Draw;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommons;
 using System.Numerics;
 using Newtonsoft.Json;
 using System.Linq;
 using System.ComponentModel;
 using System.Xml.Linq;
 using Dalamud.Utility.Numerics;
+using KodakkuAssist.Extensions;
 
 namespace MyScriptNamespace
 {
@@ -56,7 +56,7 @@ namespace MyScriptNamespace
         double parse = 0;
 
         int P1雾龙计数 =0;
-        int[] P1雾龙记录 = [0, 0, 0, 0];
+        List<int> P1雾龙记录 = [0, 0, 0, 0];
         bool P1雾龙雷=false;
 
         bool P1转轮召雷 = false;
@@ -700,8 +700,8 @@ namespace MyScriptNamespace
         {
             if (!P1四连线开始) return;
             if (!ParseObjectId(@event["TargetId"], out var tid)) return;
-            var dis = 3f;//距离点名人
-            var far = 4.5f;//距离boss
+            var dis = 2.5f;//距离点名人
+            var far = 5f;//距离boss
             Task.Delay(50).ContinueWith(t =>
             {
                 var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);

@@ -9,9 +9,8 @@ using Dalamud.Memory.Exceptions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommons;
 using System.Linq;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using KodakkuAssist.Module.GameOperate;
 using System.Security.Cryptography;
 using System.ComponentModel;
@@ -19,6 +18,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Collections;
 using System.Text;
 using NAudio.Gui;
+using KodakkuAssist.Extensions;
 
 
 namespace KarlinScriptNamespace
@@ -37,10 +37,7 @@ namespace KarlinScriptNamespace
         """;
         const string updateInfoStr =
         """
-        1.增加P4开场t拉怪指示
-        2.增加p4 引导扇形、飞翎羽、啪叽慕斯怪分摊绘制
-        3.增加踩塔提示TTS
-        4.增加火山阶段翅膀飞行预测，增加倒数。
+        1.增加第四轮动物园选马
         """;
         public enum zoo2FishEnum
         {
@@ -145,24 +142,24 @@ namespace KarlinScriptNamespace
         {
             parse = 21;
         }
-        [ScriptMethod(name: "P2 第一轮大圈指路", eventType: EventTypeEnum.StatusAdd,eventCondition: ["StatusID:4454"])]
-        public void P2_第一轮大圈指路(Event @event, ScriptAccessory accessory)
-        {
-            if (parse != 21) return;
-            if (@event.TargetId != accessory.Data.Me) return;
-            var myindex= accessory.Data.PartyList.IndexOf(accessory.Data.Me);
-            if (myindex == 2 || myindex ==3) return;
+        //[ScriptMethod(name: "P2 第一轮大圈指路", eventType: EventTypeEnum.StatusAdd,eventCondition: ["StatusID:4454"])]
+        //public void P2_第一轮大圈指路(Event @event, ScriptAccessory accessory)
+        //{
+        //    if (parse != 21) return;
+        //    if (@event.TargetId != accessory.Data.Me) return;
+        //    var myindex= accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+        //    if (myindex == 2 || myindex ==3) return;
 
-            var dp = accessory.Data.GetDefaultDrawProperties();
-            dp.Name = $"P2 - 第一轮大圈指路";
-            dp.Color = accessory.Data.DefaultSafeColor;
-            dp.Owner = accessory.Data.Me;
-            dp.TargetPosition = myindex < 2 ? new(112, 0, 105) : new(88, 0, 105);
-            dp.ScaleMode |= ScaleMode.YByDistance;
-            dp.Delay = 38000;
-            dp.DestoryAt = 5000;
-            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
-        }
+        //    var dp = accessory.Data.GetDefaultDrawProperties();
+        //    dp.Name = $"P2 - 第一轮大圈指路";
+        //    dp.Color = accessory.Data.DefaultSafeColor;
+        //    dp.Owner = accessory.Data.Me;
+        //    dp.TargetPosition = myindex < 2 ? new(112, 0, 105) : new(88, 0, 105);
+        //    dp.ScaleMode |= ScaleMode.YByDistance;
+        //    dp.Delay = 38000;
+        //    dp.DestoryAt = 5000;
+        //    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+        //}
         [ScriptMethod(name: "P2 沙漠大圈范围", eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:4454"])]
         public void P2_沙漠大圈范围(Event @event, ScriptAccessory accessory)
         {
@@ -513,7 +510,22 @@ namespace KarlinScriptNamespace
                 accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
             }
         }
+        [ScriptMethod(name: "P3 动物园 第四轮选中马", eventType: EventTypeEnum.Targetable, eventCondition: ["Targetable:True", "DataId:18345"])]
+        public void P3_动物园_第四轮选中马(Event @event, ScriptAccessory accessory)
+        {
+            if (parse != 34) return;
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            if (myindex == 1 || myindex == 4 || myindex == 5)
+            {
+                Task.Delay(50).ContinueWith(t =>
+                {
+                    accessory.Method.SelectTarget((uint)@event.SourceId);
+                });
+                accessory.Method.TTS("打马");
+            }
+            
 
+        }
         [ScriptMethod(name: "P3 动物园 第四轮眩晕马提示", eventType: EventTypeEnum.Targetable, eventCondition: ["Targetable:True", "DataId:18345"])]
         public void P3_动物园_第四轮眩晕马提示(Event @event, ScriptAccessory accessory)
         {

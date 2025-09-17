@@ -9,14 +9,14 @@ using Dalamud.Memory.Exceptions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommons;
 using System.Linq;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using KodakkuAssist.Module.GameOperate;
 using KodakkuAssist.Module.Draw.Manager;
 using System.Security.Cryptography;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Threading;
+using KodakkuAssist.Extensions;
 
 
 namespace KarlinScriptNamespace

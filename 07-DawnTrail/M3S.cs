@@ -9,15 +9,15 @@ using Dalamud.Memory.Exceptions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommons;
 using System.Linq;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using KodakkuAssist.Module.GameOperate;
 using System.Security.Cryptography;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using KodakkuAssist.Module.Draw.Manager;
 using KodakkuAssist.Data;
+using KodakkuAssist.Extensions;
 
 namespace KarlinScriptNamespace
 {
@@ -699,8 +699,8 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "场地引线分配", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:37871"])]
         public void 场地引线分配(Event @event, ScriptAccessory accessory)
         {
-            int[] tnGroup = TNTN_Fuse ? [0, 2, 1, 3] : [0, 1, 2, 3];
-            int[] dpsGroup = [4, 5, 6, 7];
+            List<int> tnGroup = TNTN_Fuse ? [0, 2, 1, 3] : [0, 1, 2, 3];
+            List<int> dpsGroup = [4, 5, 6, 7];
             var myPartyIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
             var myFuseIndex = tnGroup.IndexOf(myPartyIndex);
             myFuseIndex = myFuseIndex == -1 ? dpsGroup.IndexOf(myPartyIndex) : myFuseIndex;
@@ -730,8 +730,8 @@ namespace KarlinScriptNamespace
         [ScriptMethod(name: "场地引线撞线提示", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:regex:^(3787[25])$", "TargetIndex:1"])]
         public void 场地引线撞线提示(Event @event, ScriptAccessory accessory)
         {
-            int[] tnGroup = TNTN_Fuse ? [0, 2, 1, 3] : [0, 1, 2, 3];
-            int[] dpsGroup = [4, 5, 6, 7];
+            List<int> tnGroup = TNTN_Fuse ? [0, 2, 1, 3] : [0, 1, 2, 3];
+            List<int> dpsGroup = [4, 5, 6, 7];
 
             var myPartyIndex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
             var myFuseIndex = tnGroup.IndexOf(myPartyIndex);
