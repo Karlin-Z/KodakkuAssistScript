@@ -1,12 +1,14 @@
 ﻿using System;
 using KodakkuAssist.Module.GameEvent;
 using KodakkuAssist.Script;
+using KodakkuAssist.Data;
+using KodakkuAssist.Extensions;
 using KodakkuAssist.Module.GameEvent.Struct;
 using KodakkuAssist.Module.Draw;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECommons;
+//using ECommons;
 using System.Numerics;
 using Newtonsoft.Json;
 using System.Linq;
@@ -14,12 +16,11 @@ using System.ComponentModel;
 using System.Xml.Linq;
 using Dalamud.Utility.Numerics;
 using Dalamud.Game.ClientState.Objects.Types;
-using ECommons.GameFunctions;
 
 namespace MyScriptNamespace
 {
     
-    [ScriptType(name: "OmegaProtocolUltimate", territorys: [1122],guid: "625eb340-0811-4c37-b87c-c46fe5204940", version:"0.0.0.4",note: noteStr)]
+    [ScriptType(name: "OmegaProtocolUltimate", territorys: [1122],guid: "625eb340-0811-4c37-b87c-c46fe5204940", version:"0.0.0.5",note: noteStr)]
     public class OmegaProtocolUltimate
     {
         const string noteStr =
@@ -456,9 +457,9 @@ namespace MyScriptNamespace
             var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
             Vector3 centre = new(100, 0, 100);
             if ((pos - centre).Length() > 12) return;
-            var c = accessory.Data.Objects.SearchById(sid);
+            var c = accessory.Data.Objects.SearchById(sid) as KodakkuAssist.Data.ICharacter;
             if (c == null) return;
-            var transformationID = ((Dalamud.Game.ClientState.Objects.Types.IBattleChara)c).GetTransformationID();
+            var transformationID = c!.GetTransformationID();
             if (@event["SourceDataId"] == "15714")
             {
                 //男
