@@ -23,7 +23,7 @@ using KodakkuAssist.Extensions;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "M6s绘图", territorys: [1259], guid: "0146ff9b-1118-44e1-7386-e3b0795e7b60", version: "0.0.0.4", author: "Karlin", note: noteStr, updateInfo: updateInfoStr)]
+    [ScriptType(name: "M6s绘图", territorys: [1259], guid: "0146ff9b-1118-44e1-7386-e3b0795e7b60", version: "0.0.0.5", author: "Karlin", note: noteStr, updateInfo: updateInfoStr)]
     public class M6sDraw
     {
         const string noteStr =

@@ -2,12 +2,12 @@
   {
     "Name": "M1s绘图",
     "Guid": "8010d865-7d6d-4c23-92e0-f4b0120e18ac",
-    "Version": "0.0.0.8",
+    "Version": "0.0.0.9",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M1s.cs",
     "Note": "",
-    "UpdateInfo": "1.P3分身拉怪辅助显示时间优化\n2.P3分身拉怪辅助以boss为起点绘制\n 3. P3分身面向辅助显示时间优化。",
+    "UpdateInfo": "",
     "TerritoryIds": [
       1226
     ]
@@ -15,12 +15,12 @@
   {
     "Name": "M2s绘图",
     "Guid": "d99c7e91-9b56-432d-a3a8-49a8586915b7e2a",
-    "Version": "0.0.0.2",
+    "Version": "0.0.0.3",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M2S.cs",
     "Note": "",
-    "UpdateInfo": "1. 修复第二次直播放圈仍提示踩塔",
+    "UpdateInfo": "",
     "TerritoryIds": [
       1228
     ]
@@ -28,7 +28,7 @@
   {
     "Name": "M3s绘图",
     "Guid": "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5",
-    "Version": "0.0.0.7",
+    "Version": "0.0.0.9",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M3S.cs",
@@ -41,12 +41,12 @@
   {
     "Name": "M4s绘图",
     "Guid": "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2",
-    "Version": "0.0.0.12",
+    "Version": "0.0.0.13",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M4S.cs",
     "Note": "",
-    "UpdateInfo": "1. 修复蓝黄炮后buff分散，MMW攻略。TN和dps位置反向\n",
+    "UpdateInfo": "",
     "TerritoryIds": [
       1232
     ]
@@ -54,7 +54,7 @@
   {
     "Name": "极佐拉加绘图",
     "Guid": "d9c97e91-9b59-432d-a3a1-42a8586985b7e2a",
-    "Version": "0.0.0.1",
+    "Version": "0.0.0.2",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E4%BD%90%E6%8B%89%E5%8A%A0.cs",
@@ -72,7 +72,7 @@
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E6%9E%81%E8%89%B3%E7%BF%BC%E8%9B%87%E9%B8%9F.cs",
     "Note": "",
-    "UpdateInfo": "1. 增加开场冰指路。\n2. 修复冰阶段指路无效。",
+    "UpdateInfo": "",
     "TerritoryIds": [
       1196
     ]
@@ -80,12 +80,12 @@
   {
     "Name": "绝龙诗绘图",
     "Guid": "d9c97e91-9b59-432d-a3a1-42a8475b7e2a",
-    "Version": "0.0.0.5",
+    "Version": "0.0.0.6",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%B9%BB%E6%83%B3%E9%BE%99%E8%AF%97%E7%BB%9D%E5%A2%83%E6%88%98.cs",
     "Note": "",
-    "UpdateInfo": "1. 再次修复P2 2运劈刀 D1 D2指向位置错误。",
+    "UpdateInfo": "",
     "TerritoryIds": [
       968
     ]
@@ -93,25 +93,25 @@
   {
     "Name": "OmegaProtocolUltimate",
     "Guid": "625eb340-0811-4c37-b87c-c46fe5204940",
-    "Version": "0.0.0.4",
-    "Author": "Karlin",
+    "Version": "0.0.0.5",
+    "Author": "Unknown",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/OmegaProtocolUltimate.cs",
     "Note": "欧米茄验证绝境战",
-    "UpdateInfo": "适配新版插件",
+    "UpdateInfo": "",
     "TerritoryIds": [
       1122
     ]
   },
   {
-    "Name": "绝伊甸绘图",
+    "Name": "EdenUltimate",
     "Guid": "a4e14eff-0aea-a4b6-d8c3-47644a3e9e9a",
-    "Version": "0.0.0.10",
-    "Author": "Karlin",
+    "Version": "0.0.0.11",
+    "Author": "Unknown",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/%E7%BB%9D%E4%BC%8A%E7%94%B8.cs",
-    "Note": "",
-    "UpdateInfo": "1. 修复开场给boss标攻击1\n2. P4 二运撞头点优化",
+    "Note": "绝伊甸先行版 P4结束\r\nP3地火站位和水分摊尚无\r\nP4白圈指示尚无",
+    "UpdateInfo": "",
     "TerritoryIds": [
       1238
     ]
@@ -147,7 +147,7 @@
   {
     "Name": "M5s绘图",
     "Guid": "ecf3365e-8d21-5daa-0329-8aa33ee30778",
-    "Version": "0.0.0.2",
+    "Version": "0.0.0.3",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/refs/heads/main/07-DawnTrail/M5s.cs",
@@ -160,14 +160,53 @@
   {
     "Name": "M6s绘图",
     "Guid": "0146ff9b-1118-44e1-7386-e3b0795e7b60",
-    "Version": "0.0.0.4",
+    "Version": "0.0.0.5",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/refs/heads/main/07-DawnTrail/M6s.cs",
     "Note": "M6S 扩充绘图脚本\r\n目前包含以下内容:\r\n1.扩充绘制（非所有机制，请配合Usami脚本使用）\r\n2.动物园阶段T拉怪路线指示\r\n3.动物园第二轮引导鱼自动选择（须设置引导左右），第四轮鱼自动选择（根据职能分配）\r\n4.动物园阶段近战自动选马",
-    "UpdateInfo": "1.增加P4开场t拉怪指示\r\n2.增加p4 引导扇形、飞翎羽、啪叽慕斯怪分摊绘制\r\n3.增加踩塔提示TTS\r\n4.增加火山阶段翅膀飞行预测，增加倒数。",
+    "UpdateInfo": "1.增加第四轮动物园选马",
     "TerritoryIds": [
       1259
+    ]
+  },
+  {
+    "Name": "M7s绘图",
+    "Guid": "37ea4922-dee4-b998-f23f-e2a1cd1b1bcd",
+    "Version": "0.0.0.5",
+    "Author": "Karlin",
+    "Repo": "",
+    "DownloadUrl": "",
+    "Note": "",
+    "UpdateInfo": "",
+    "TerritoryIds": [
+      1261
+    ]
+  },
+  {
+    "Name": "M7sPiPi",
+    "Guid": "6ac641b7-0c94-1e86-803b-b020f772abcc",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "Repo": "",
+    "DownloadUrl": "",
+    "Note": "",
+    "UpdateInfo": "",
+    "TerritoryIds": [
+      1261
+    ]
+  },
+  {
+    "Name": "M8s绘图",
+    "Guid": "50723590-fd25-5934-36ce-5f7e35097cb6",
+    "Version": "0.0.0.4",
+    "Author": "Karlin",
+    "Repo": "",
+    "DownloadUrl": "",
+    "Note": "",
+    "UpdateInfo": "",
+    "TerritoryIds": [
+      1263
     ]
   }
 ]

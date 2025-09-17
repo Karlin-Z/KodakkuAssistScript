@@ -16,7 +16,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name:"绝龙诗绘图", territorys: [968], guid: "d9c97e91-9b59-432d-a3a1-42a8475b7e2a", version:"0.0.0.5", author: "Karlin")]
+    [ScriptType(name:"绝龙诗绘图", territorys: [968], guid: "d9c97e91-9b59-432d-a3a1-42a8475b7e2a", version:"0.0.0.6", author: "Karlin")]
     public class DragongSingDraw
     {
         

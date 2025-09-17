@@ -16,7 +16,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "极佐拉加绘图",territorys:[1201],guid: "d9c97e91-9b59-432d-a3a1-42a8586985b7e2a", version:"0.0.0.1", author: "Karlin")]
+    [ScriptType(name: "极佐拉加绘图",territorys:[1201],guid: "d9c97e91-9b59-432d-a3a1-42a8586985b7e2a", version:"0.0.0.2", author: "Karlin")]
     public class ZoraalaExDraw
     {
         

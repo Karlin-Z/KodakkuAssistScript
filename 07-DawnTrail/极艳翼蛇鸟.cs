@@ -16,7 +16,7 @@ using KodakkuAssist.Module.GameOperate;
 
 namespace KarlinScriptNamespace
 {
-    [ScriptType(name: "极艳翼蛇鸟绘图", territorys:[1196],guid: "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a", version:"0.0.0.2", author: "Karlin")]
+    [ScriptType(name: "极艳翼蛇鸟绘图", territorys:[1196],guid: "d9c97e91-9b59-432d-a8a2-42a8586985b7e2a", version:"0.0.0.3", author: "Karlin")]
     public class ValigarmandaExDraw
     {
         
