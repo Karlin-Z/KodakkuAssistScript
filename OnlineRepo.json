@@ -208,5 +208,18 @@
     "TerritoryIds": [
       1263
     ]
+  },
+  {
+    "Name": "绝凯夫卡",
+    "Guid": "06cd8ccc-589d-46c4-8f50-36e3ca55919f",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "Repo": "",
+    "DownloadUrl": "https://github.com/Karlin-Z/KodakkuAssistScript/raw/refs/heads/main/07-DawnTrail/%E7%BB%9D%E5%8D%A1%E5%A4%AB%E5%8D%A1.cs",
+    "Note": "",
+    "UpdateInfo": "开工",
+    "TerritoryIds": [
+      1363
+    ]
   }
 ]
