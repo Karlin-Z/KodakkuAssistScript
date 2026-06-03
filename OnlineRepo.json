@@ -212,12 +212,12 @@
   {
     "Name": "绝凯夫卡",
     "Guid": "06cd8ccc-589d-46c4-8f50-36e3ca55919f",
-    "Version": "0.0.0.3",
+    "Version": "0.0.0.4",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://github.com/Karlin-Z/KodakkuAssistScript/raw/refs/heads/main/07-DawnTrail/%E7%BB%9D%E5%8D%A1%E5%A4%AB%E5%8D%A1.cs",
     "Note": "",
-    "UpdateInfo": "更新放传送点的指路",
+    "UpdateInfo": "精修  P1\r\n增加分摊击退指示\r\n增加连线岩石范围",
     "TerritoryIds": [
       1363
     ]

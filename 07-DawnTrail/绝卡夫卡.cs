@@ -12,6 +12,8 @@ using KodakkuAssist.Script;
 using KodakkuAssist.Data;
 using System.Numerics;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace KarlinScriptNamespace;
 
@@ -20,12 +22,14 @@ namespace KarlinScriptNamespace;
 /// territorys specifies the regions where this trigger is effective. If left empty, it will be effective in all regions.
 /// Classes with the same GUID will be considered the same trigger. Please ensure your GUID is unique and does not conflict with others.
 /// </summary>
-[ScriptType(name: "绝凯夫卡", territorys: [1363],guid: "06cd8ccc-589d-46c4-8f50-36e3ca55919f", version:"0.0.0.3",author:"Karlin", updateInfo: updateInfoStr)]
+[ScriptType(name: "绝凯夫卡", territorys: [1363],guid: "06cd8ccc-589d-46c4-8f50-36e3ca55919f", version:"0.0.0.4",author:"Karlin", updateInfo: updateInfoStr)]
 public class 绝凯夫卡
 {
     const string updateInfoStr =
         """
-        更新放传送点的指路
+        精修  P1
+        增加分摊击退指示
+        增加连线岩石范围
         """;
     [UserSetting("危险颜色2")]
     public ScriptColor dangerColor { get; set; } = new();
@@ -54,6 +58,7 @@ public class 绝凯夫卡
         towerPos = [];
         p1BossId = @event.SourceId;
         p1TeleportList = [0,0,0,0,0,0,0,0];
+        p1stoneCount = 0;
         accessory.Log.Debug($"Parse: {parse}");
     }
 
@@ -239,24 +244,24 @@ public class 绝凯夫卡
         var dp = accessory.Data.GetDefaultDrawProperties();
         dp.Name = $"P1连线点名击退";
         dp.Scale = new(1.5f, 13);
-        dp.Color = accessory.Data.DefaultDangerColor;
+        dp.Color = accessory.Data.DefaultDangerColor.WithW(2);
         dp.Owner = @event.TargetId;
         dp.TargetObject= @event.SourceId;
         dp.Rotation = MathF.PI;
         dp.DestoryAt = 5000;
-        accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Displacement, dp);
+        accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
     }
 
     private List<int> lightHit = [];
     private List<int> p1Queue = [];
     private List<Vector3> towerPos = [];
-    object lightLock = new();
+    object treadLock = new();
     [ScriptMethod(eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:47784", "TargetIndex:1"])]
     public void P1_单人塔(Event @event, ScriptAccessory accessory)
     {
         var targetindex = accessory.Data.PartyList.IndexOf((uint)@event.TargetId);
         var pos = @event.TargetPosition;
-        lock (lightLock)
+        lock (treadLock)
         {
             lightHit.Add(targetindex);
             towerPos.Add(pos);
@@ -312,11 +317,27 @@ public class 绝凯夫卡
         var dp = accessory.Data.GetDefaultDrawProperties();
         dp.Name = $"P1_陷阱点名";
         dp.Scale = new(6);
-        dp.Color = accessory.Data.DefaultDangerColor;
+        dp.Color = accessory.Data.DefaultDangerColor.WithW(0.5f);
         dp.Owner = @event.TargetId;
         dp.Delay=int.Parse(@event["DurationMilliseconds"])-5000;
         dp.DestoryAt = 5000;
         accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+    }
+    [ScriptMethod(eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:5078"])]
+    public void P1_陷阱点名击退指示(Event @event, ScriptAccessory accessory)
+    {
+        var dp = accessory.Data.GetDefaultDrawProperties();
+        dp.Name = $"P1_陷阱点名击退指示";
+        dp.Scale = new(2,14);
+        dp.Color = accessory.Data.DefaultDangerColor;
+        dp.Owner=accessory.Data.Me;
+        dp.TargetObject = @event.TargetId;
+        dp.Rotation = MathF.PI;
+        dp.FadeCentreObject = @event.TargetId;
+        dp.FadeDistance = 6;
+        dp.Delay = int.Parse(@event["DurationMilliseconds"]) - 5000;
+        dp.DestoryAt = 5000;
+        accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
     }
 
     [ScriptMethod(eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:50722"],suppress:1000)]
@@ -335,6 +356,27 @@ public class 绝凯夫卡
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
         }
         
+    }
+
+    private int p1stoneCount = 0;
+    [ScriptMethod(eventType: EventTypeEnum.Tether, eventCondition: ["Id:002D"])]
+    public void P1_连线岩石弹(Event @event, ScriptAccessory accessory)
+    {
+        if (parse != 12) return;
+        lock (treadLock)
+        {
+            p1stoneCount++;
+        }
+        var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+        if (pos.Y > 10) return;
+        var dp = accessory.Data.GetDefaultDrawProperties();
+        dp.Name = $"P1_连线岩石弹";
+        dp.Scale = new(5);
+        dp.Color = accessory.Data.DefaultDangerColor;
+        dp.Owner = @event.TargetId;
+        dp.Delay= p1stoneCount > 4 ? 8500 : 6500;
+        dp.DestoryAt = 4000;
+        accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
     }
 
     [ScriptMethod(eventType: EventTypeEnum.ObjectEffect, eventCondition: ["Id1:64","Id2:128"])]
@@ -496,6 +538,8 @@ public class 绝凯夫卡
 
         });
     }
+
+
     #endregion
 
     #region 工具方法
