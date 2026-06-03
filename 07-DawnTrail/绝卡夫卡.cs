@@ -1,13 +1,17 @@
 ﻿using System;
-using KodakkuAssist.Module.GameEvent;
-using KodakkuAssist.Script;
-using KodakkuAssist.Module.GameEvent.Struct;
-using KodakkuAssist.Module.Draw;
-using System.Windows.Forms;
-using KodakkuAssist.Extensions;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Dalamud.Utility.Numerics;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using KodakkuAssist.Extensions;
+using KodakkuAssist.Module.Draw;
+using KodakkuAssist.Module.GameEvent;
+using KodakkuAssist.Module.GameEvent.Struct;
+using KodakkuAssist.Script;
+using KodakkuAssist.Data;
+using System.Numerics;
+using System.Collections.Generic;
 
 namespace KarlinScriptNamespace;
 
@@ -16,11 +20,18 @@ namespace KarlinScriptNamespace;
 /// territorys specifies the regions where this trigger is effective. If left empty, it will be effective in all regions.
 /// Classes with the same GUID will be considered the same trigger. Please ensure your GUID is unique and does not conflict with others.
 /// </summary>
-[ScriptType(name: "绝凯夫卡", territorys: [1363],guid: "06cd8ccc-589d-46c4-8f50-36e3ca55919f", version:"0.0.0.1",author:"Karlin")]
+[ScriptType(name: "绝凯夫卡", territorys: [1363],guid: "06cd8ccc-589d-46c4-8f50-36e3ca55919f", version:"0.0.0.2",author:"Karlin", updateInfo: updateInfoStr)]
 public class 绝凯夫卡
 {
+    const string updateInfoStr =
+        """
+        更新到P1传送前
+        """;
     [UserSetting("危险颜色2")]
     public ScriptColor dangerColor { get; set; } = new();
+
+    [UserSetting("P1火分散延迟显示时间")]
+    public int p1FireDelay { get; set; } = 2000;
 
     private int parse = 0;
 
@@ -31,21 +42,35 @@ public class 绝凯夫卡
         parse = 10;
     }
 
-    
-    [ScriptMethod(name: "恶狠狠毁荡",eventType: EventTypeEnum.StartCasting,eventCondition: ["ActionId:50179"])]
-    public void 恶狠狠毁荡(Event @event, ScriptAccessory accessory)
+    #region P1
+
+    private ulong p1BossId = 0;
+    [ScriptMethod(eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:48370"],userControl:false)]
+    public void P1_阶段转换(Event @event, ScriptAccessory accessory)
+    {
+        parse++;
+        p1Queue = [3, 2, 1, 0, 4, 5, 6, 7];
+        lightHit = [];
+        towerPos = [];
+        p1BossId = @event.SourceId;
+        accessory.Log.Debug($"Parse: {parse}");
+    }
+
+    [ScriptMethod(eventType: EventTypeEnum.StartCasting,eventCondition: ["ActionId:50179"])]
+    public void P1_恶狠狠毁荡(Event @event, ScriptAccessory accessory)
     {
         var dp = accessory.Data.GetDefaultDrawProperties();
         dp.Name = $"恶狠狠毁荡 扇形死刑 一仇";
-        dp.Scale = new(20);
-        dp.Color = accessory.Data.DefaultDangerColor;
+        dp.Scale = new(40);
+        dp.Color = accessory.Data.DefaultDangerColor.WithW(2);
         dp.Owner = @event.SourceId;
-        dp.TargetOrderIndex=1;
-        dp.TargetResolvePattern=PositionResolvePatternEnum.OwnerEnmityOrder;
+        dp.TargetObject=@event.TargetId;
         dp.Radian=MathF.PI/3*2;
         dp.DestoryAt = 5000;
         accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
+        dp.TargetObject=0xE0000000;
+        dp.TargetResolvePattern=PositionResolvePatternEnum.OwnerEnmityOrder;
         dp.TargetOrderIndex = 2;
         dp.Color = dangerColor.V4;
         dp.Name = $"恶狠狠毁荡 扇形死刑 二仇 预兆";
@@ -58,8 +83,8 @@ public class 绝凯夫卡
         accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
     }
 
-    [ScriptMethod(name: "P1真假冰扇形", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(47768|47774)$"])]
-    public void P1真假冰扇形(Event @event, ScriptAccessory accessory)
+    [ScriptMethod( eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(47768|47774)$"])]
+    public void P1_真假冰扇形(Event @event, ScriptAccessory accessory)
     {
         var dp = accessory.Data.GetDefaultDrawProperties();
         dp.Name = $"真假冰扇形";
@@ -68,11 +93,11 @@ public class 绝凯夫卡
         dp.Owner = @event.SourceId;
         dp.Radian = MathF.PI /2;
         dp.DestoryAt = 5000;
-        accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Fan, dp);
+        accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
     }
 
-    [ScriptMethod(name: "P1真假雷直线", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(47775|47777)$"])]
-    public void P1真假雷直线(Event @event, ScriptAccessory accessory)
+    [ScriptMethod(eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(47775|47777)$"])]
+    public void P1_真假雷直线(Event @event, ScriptAccessory accessory)
     {
         var dp = accessory.Data.GetDefaultDrawProperties();
         dp.Name = $"P1真假雷直线";
@@ -80,15 +105,15 @@ public class 绝凯夫卡
         dp.Color = accessory.Data.DefaultDangerColor;
         dp.Owner = @event.SourceId;
         dp.DestoryAt = 5000;
-        accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Rect, dp);
+        accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
     }
-    [ScriptMethod(name: "P1真假火收集", eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:regex:^(02A1|02A2)$"],userControl:false)]
-    public void P1真假火收集(Event @event, ScriptAccessory accessory)
+    [ScriptMethod(eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:regex:^(02A1|02A2)$"],userControl:false)]
+    public void P1_真假火收集(Event @event, ScriptAccessory accessory)
     {
         trueFire = @event["Id"] == "02A2";
     }
-    [ScriptMethod(name: "P1真假火分摊处理", eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:0080"])]
-    public void P1真假火分摊处理(Event @event, ScriptAccessory accessory)
+    [ScriptMethod(eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:0080"])]
+    public void P1_真假火分摊处理(Event @event, ScriptAccessory accessory)
     {
         Task.Delay(50).ContinueWith(o =>
         {
@@ -110,7 +135,7 @@ public class 绝凯夫卡
                     dp.Color = accessory.Data.DefaultSafeColor;
                 }
 
-                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
+                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
             }
             else if((targetindex < 4) == (myindex < 4))
             {
@@ -121,16 +146,17 @@ public class 绝凯夫卡
                     dp.Scale = new(5);
                     dp.Color = accessory.Data.DefaultDangerColor;
                     dp.Owner = accessory.Data.PartyList[i];
-                    dp.DestoryAt = 6000;
-                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
+                    dp.Delay = p1FireDelay;
+                    dp.DestoryAt = 6000 - p1FireDelay;
+                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
                 }
                 
             }
         });
 
     }
-    [ScriptMethod(name: "P1真假火分散处理", eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:007F"],suppress:1000)]
-    public void P1真假火分散处理(Event @event, ScriptAccessory accessory)
+    [ScriptMethod(eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:007F"],suppress:1000)]
+    public void P1_真假火分散处理(Event @event, ScriptAccessory accessory)
     {
         Task.Delay(50).ContinueWith(o =>
         {
@@ -144,31 +170,31 @@ public class 绝凯夫卡
                     dp.Scale = new(5);
                     dp.Color = accessory.Data.DefaultDangerColor;
                     dp.Owner = accessory.Data.PartyList[i];
-                    dp.DestoryAt = 6000;
-                    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
+                    dp.Delay= p1FireDelay;
+                    dp.DestoryAt = 6000- p1FireDelay;
+                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
                 }
             }
             else
             {
-                var targetindex = 0;
                 var dp = accessory.Data.GetDefaultDrawProperties();
-                dp.Name = $"假火分散0";
+                dp.Name = $"假火分摊0";
                 dp.Scale = new(6);
                 dp.Color =myindex<4? accessory.Data.DefaultSafeColor: accessory.Data.DefaultDangerColor;
                 dp.Owner = accessory.Data.PartyList[0];
                 dp.DestoryAt = 6000;
-                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
+                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
 
-                dp.Name = $"假火分散4";
+                dp.Name = $"假火分摊4";
                 dp.Color = myindex < 4 ? accessory.Data.DefaultDangerColor : accessory.Data.DefaultSafeColor;
                 dp.Owner = accessory.Data.PartyList[4];
-                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
+                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
             }
         });
 
     }
-    [ScriptMethod(name: "P1真假火分散分摊TTS", eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:regex:^(0080|007F)$"],suppress:1000)]
-    public void P1真假火分散分摊TTS(Event @event, ScriptAccessory accessory)
+    [ScriptMethod(  eventType: EventTypeEnum.TargetIcon, eventCondition: ["Id:regex:^(0080|007F)$"])]
+    public void P1_真假火分散分摊TTS(Event @event, ScriptAccessory accessory)
     {
         Task.Delay(50).ContinueWith(o =>
         {
@@ -189,31 +215,198 @@ public class 绝凯夫卡
         });
     }
 
-    //[ScriptMethod(name: "P1连线点名波动炮", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:47785"])]
-    //public void P1连线点名波动炮(Event @event, ScriptAccessory accessory)
-    //{
-    //    var dp = accessory.Data.GetDefaultDrawProperties();
-    //    dp.Name = $"P1连线点名波动炮";
-    //    dp.Scale = new(6, 60);
-    //    dp.Color = accessory.Data.DefaultDangerColor;
-    //    dp.Position = @event.SourcePosition.WithY(0);
-    //    dp.TargetObject = @event.TargetId;
-    //    dp.DestoryAt = 7000;
-    //    accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Rect, dp);
-    //}
-    [ScriptMethod(name: "P1单人塔", eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:47784", "TargetIndex:1"])]
-    public void P1单人塔(Event @event, ScriptAccessory accessory)
+    [ScriptMethod(eventType: EventTypeEnum.StartCasting,eventCondition: ["ActionId:regex:^(47776|47771)$"])]
+    public void P1_屏蔽假雷假冰(Event @event, ScriptAccessory accessory)
     {
-        var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
-        var targetindex = accessory.Data.PartyList.IndexOf((uint)@event.TargetId);
+        var obj = accessory.Data.Objects.SearchById((uint)@event.SourceId);
+        if (obj == null || !obj.IsValid()) return;
+        WriteVisible(accessory, obj, false, 5000);
+    }
+    [ScriptMethod(eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(47775|47768)$"])]
+    public void P1_屏蔽真雷冰(Event @event, ScriptAccessory accessory)
+    {
+        var obj = accessory.Data.Objects.SearchById((uint)@event.SourceId);
+        if (obj == null || !obj.IsValid()) return;
+        WriteVisible(accessory, obj, false, 5000);
+    }
+
+    [ScriptMethod(eventType: EventTypeEnum.Tether, eventCondition: ["Id:002D"])]
+    public void P1_连线点名击退(Event @event, ScriptAccessory accessory)
+    {
+        if (parse != 11) return;
+        if (@event.TargetId != accessory.Data.Me) return;
         var dp = accessory.Data.GetDefaultDrawProperties();
-        dp.Name = $"P1单人塔";
-        dp.Scale = new(4);
-        dp.Color = Math.Abs(myindex - targetindex) == 4 ? accessory.Data.DefaultSafeColor : accessory.Data.DefaultDangerColor;
-        dp.Position = @event.TargetPosition;
-        dp.DestoryAt = 3500;
+        dp.Name = $"P1连线点名击退";
+        dp.Scale = new(1.5f, 13);
+        dp.Color = accessory.Data.DefaultDangerColor;
+        dp.Owner = @event.TargetId;
+        dp.TargetObject= @event.SourceId;
+        dp.Rotation = MathF.PI;
+        dp.DestoryAt = 5000;
+        accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Displacement, dp);
+    }
+
+    private List<int> lightHit = [];
+    private List<int> p1Queue = [];
+    private List<Vector3> towerPos = [];
+    object lightLock = new();
+    [ScriptMethod(eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:47784", "TargetIndex:1"])]
+    public void P1_单人塔(Event @event, ScriptAccessory accessory)
+    {
+        var targetindex = accessory.Data.PartyList.IndexOf((uint)@event.TargetId);
+        var pos = @event.TargetPosition;
+        lock (lightLock)
+        {
+            lightHit.Add(targetindex);
+            towerPos.Add(pos);
+        }
+        if (towerPos.Count == 4)
+        {
+            var myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            towerPos.Sort((a, b) => a.X.CompareTo(b.X));
+            var towerPeople = p1Queue.Where(x => !lightHit.Contains(x)).ToList();
+            if (lightHit.Contains(myindex))
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    var dp = accessory.Data.GetDefaultDrawProperties();
+                    dp.Name = $"单人塔";
+                    dp.Scale = new(4);
+                    dp.Color = accessory.Data.DefaultDangerColor;
+                    dp.Position = towerPos[i];
+                    dp.DestoryAt = 3500;
+                    accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+                }
+                
+            }
+            else
+            {
+                var towerIndex = towerPeople.IndexOf(myindex);
+
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"单人塔";
+                dp.Scale = new(4);
+                dp.Color = accessory.Data.DefaultSafeColor;
+                dp.Position = towerPos[towerIndex];
+                dp.DestoryAt = 3500;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Circle, dp);
+
+                var dp2 = accessory.Data.GetDefaultDrawProperties();
+                dp2.Name = $"单人塔指路";
+                dp2.Scale= new(2);
+                dp2.ScaleMode= ScaleMode.YByDistance;
+                dp2.Color = accessory.Data.DefaultSafeColor;
+                dp2.Owner=accessory.Data.Me;
+                dp2.TargetPosition = towerPos[towerIndex];
+                dp2.DestoryAt = 3500;
+                accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp2);
+            }
+            
+        }
+    }
+
+    [ScriptMethod(eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:5078"])]
+    public void P1_陷阱点名(Event @event, ScriptAccessory accessory)
+    {
+        var dp = accessory.Data.GetDefaultDrawProperties();
+        dp.Name = $"P1_陷阱点名";
+        dp.Scale = new(6);
+        dp.Color = accessory.Data.DefaultDangerColor;
+        dp.Owner = @event.TargetId;
+        dp.DestoryAt = 5000;
         accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
     }
+
+    [ScriptMethod(eventType: EventTypeEnum.ActionEffect, eventCondition: ["ActionId:50722"],suppress:1000)]
+    public void P1_超驱动死刑(Event @event, ScriptAccessory accessory)
+    {
+        if (parse==11|| parse==12)
+        {
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = $"P1_超驱动死刑";
+            dp.Scale = new(5);
+            dp.Color = accessory.Data.DefaultDangerColor;
+            dp.Owner = @event.SourceId;
+            dp.CentreResolvePattern = PositionResolvePatternEnum.OwnerEnmityOrder;
+            dp.CentreOrderIndex = 1;
+            dp.DestoryAt = 7500;
+            accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
+        }
+        
+    }
+
+    [ScriptMethod(eventType: EventTypeEnum.ObjectEffect, eventCondition: ["Id1:64","Id2:128"])]
+    public void P1_左右刀(Event @event, ScriptAccessory accessory)
+    {
+        if (parse == 12)
+        {
+            var source = accessory.Data.Objects.SearchById(@event.SourceId);
+            if (source.DataId == 2015164)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"P1_左右刀";
+                dp.Scale = new(20);
+                dp.Color = accessory.Data.DefaultDangerColor;
+                dp.Position = new(100, 0, 100);
+                dp.Radian = MathF.PI;
+                dp.Rotation = -MathF.PI / 2;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
+            }
+            if (source.DataId == 2015165)
+            {
+                var dp = accessory.Data.GetDefaultDrawProperties();
+                dp.Name = $"P1_左右刀";
+                dp.Scale = new(20);
+                dp.Color = accessory.Data.DefaultDangerColor;
+                dp.Position = new(100, 0, 100);
+                dp.Radian = MathF.PI;
+                dp.Rotation = MathF.PI / 2;
+                dp.DestoryAt = 5000;
+                accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
+            }
+        }
+
+    }
+    #endregion
+
+    #region 工具方法
+    public static unsafe void WriteVisible(ScriptAccessory sa, IGameObject? actor, bool visible,int recoverInterval=0)
+    {
+        if (actor == null || !actor.IsValid()) return;
+
+        try
+        {
+            var gameObject = (GameObject*)actor.Address;
+            var oldFlags = gameObject->RenderFlags;
+            gameObject->RenderFlags = visible
+                ? VisibilityFlags.None
+                : VisibilityFlags.Model;
+            if (recoverInterval<=0)
+            {
+                return;
+            }
+            Task.Delay(recoverInterval).ContinueWith(_ =>
+            {
+                if (actor == null || !actor.IsValid()) return;
+
+                try
+                {
+                    var gameObject = (GameObject*)actor.Address;
+                    gameObject->RenderFlags = oldFlags;
+                }
+                catch (Exception e)
+                {
+                    sa.Log.Error(e.ToString());
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            sa.Log.Error(e.ToString());
+        }
+    }
+    #endregion
 
 }
 
