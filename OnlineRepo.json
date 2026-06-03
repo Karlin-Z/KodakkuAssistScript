@@ -212,12 +212,12 @@
   {
     "Name": "绝凯夫卡",
     "Guid": "06cd8ccc-589d-46c4-8f50-36e3ca55919f",
-    "Version": "0.0.0.2",
+    "Version": "0.0.0.3",
     "Author": "Karlin",
     "Repo": "",
     "DownloadUrl": "https://github.com/Karlin-Z/KodakkuAssistScript/raw/refs/heads/main/07-DawnTrail/%E7%BB%9D%E5%8D%A1%E5%A4%AB%E5%8D%A1.cs",
     "Note": "",
-    "UpdateInfo": "更新到P1传送前",
+    "UpdateInfo": "更新放传送点的指路",
     "TerritoryIds": [
       1363
     ]

@@ -20,12 +20,12 @@ namespace KarlinScriptNamespace;
 /// territorys specifies the regions where this trigger is effective. If left empty, it will be effective in all regions.
 /// Classes with the same GUID will be considered the same trigger. Please ensure your GUID is unique and does not conflict with others.
 /// </summary>
-[ScriptType(name: "绝凯夫卡", territorys: [1363],guid: "06cd8ccc-589d-46c4-8f50-36e3ca55919f", version:"0.0.0.2",author:"Karlin", updateInfo: updateInfoStr)]
+[ScriptType(name: "绝凯夫卡", territorys: [1363],guid: "06cd8ccc-589d-46c4-8f50-36e3ca55919f", version:"0.0.0.3",author:"Karlin", updateInfo: updateInfoStr)]
 public class 绝凯夫卡
 {
     const string updateInfoStr =
         """
-        更新到P1传送前
+        更新放传送点的指路
         """;
     [UserSetting("危险颜色2")]
     public ScriptColor dangerColor { get; set; } = new();
@@ -53,6 +53,7 @@ public class 绝凯夫卡
         lightHit = [];
         towerPos = [];
         p1BossId = @event.SourceId;
+        p1TeleportList = [0,0,0,0,0,0,0,0];
         accessory.Log.Debug($"Parse: {parse}");
     }
 
@@ -313,6 +314,7 @@ public class 绝凯夫卡
         dp.Scale = new(6);
         dp.Color = accessory.Data.DefaultDangerColor;
         dp.Owner = @event.TargetId;
+        dp.Delay=int.Parse(@event["DurationMilliseconds"])-5000;
         dp.DestoryAt = 5000;
         accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Circle, dp);
     }
@@ -368,6 +370,132 @@ public class 绝凯夫卡
         }
 
     }
+
+    private List<int> p1TeleportList = [];
+    [ScriptMethod(eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:^(487[6789]|5079|508[012])$"],userControl:false)]
+    public void P1_传送buff记录(Event @event, ScriptAccessory accessory)
+    {
+        //上 4876 5079
+        //下 4877 5080
+        //右 4878 5081 
+        //左 4879 5082 
+        var dur = int.Parse(@event["DurationMilliseconds"]);
+        var tIndex=accessory.Data.PartyList.IndexOf((uint)@event.TargetId);
+        var dir4=0;
+        var statusID = @event["StatusID"];
+        if (statusID == "4876" || statusID == "5079") dir4 = 1;
+        else if (statusID == "4877" || statusID == "5080") dir4 = 2;
+        else if (statusID == "4878" || statusID == "5081") dir4 = 3;
+        else if (statusID == "4879" || statusID == "5082") dir4 = 4;
+        lock (p1TeleportList)
+        {
+            p1TeleportList[tIndex] += dur < 8000 ? dir4 * 10 : dir4;
+        }
+        //传送距离6m
+    }
+
+    [ScriptMethod(eventType: EventTypeEnum.StatusAdd, eventCondition: ["StatusID:regex:^(487[6789]|5079|508[012])$"],suppress:1000)]
+    public void P1_传送buff放置_指路(Event @event, ScriptAccessory accessory)
+    {
+        //13 31 上右
+        //14 41 上左
+        //23 32 下右
+        //24 42 下左
+        Task.Delay(100).ContinueWith(t => {
+        
+            var  myindex = accessory.Data.PartyList.IndexOf(accessory.Data.Me);
+            var tp = p1TeleportList[myindex];
+            Vector3 pos1 =new();
+            Vector3 pos2 = new();
+            if (tp == 0) return;
+            //(100,0,91)上中点 (106,0,91)上右点
+            switch (tp)
+            {
+                case 13:
+                    pos1 = new(106, 0, 91);
+                    pos2 = new(100, 0, 91);
+                    break;
+                case 31:
+                    pos1 = new(100, 0, 91);
+                    pos2 = new(106, 0, 91);
+                    break;
+                case 14:
+                    pos1 = new(91, 0, 100);
+                    pos2 = new(91, 0, 94);
+                    break;
+                case 41:
+                    pos1 = new(91, 0, 94);
+                    pos2 = new(91, 0, 100);
+                    break;
+                case 23:
+                    pos1 = new(109, 0, 100);
+                    pos2 = new(109, 0, 106);
+                    break;
+                case 32:
+                    pos1 = new(109, 0, 106);
+                    pos2 = new(109, 0, 100);
+                    break;
+                case 24:
+                    pos1 = new(94, 0, 109);
+                    pos2 = new(100, 0, 109);
+                    break;
+                case 42:
+                    pos1 = new(100, 0, 109);
+                    pos2 = new(94, 0, 109);
+                    break;
+                case 11:
+                    pos1 = new(115, 0, 100);
+                    pos2 = new(115, 0, 106);
+                    break;
+                case 22:
+                    pos1 = new(85, 0, 100);
+                    pos2 = new(85, 0, 94);
+                    break;
+                case 33:
+                    pos1 = new(100, 0, 115);
+                    pos2 = new(94, 0, 115);
+                    break;
+                case 44:
+                    pos1 = new(100, 0, 85);
+                    pos2 = new(106, 0, 85);
+                    break;
+                default:
+                    break;
+            }
+            
+            var dp = accessory.Data.GetDefaultDrawProperties();
+            dp.Name = $"传送指路1";
+            dp.Scale = new(2);
+            dp.Color = accessory.Data.DefaultSafeColor;
+            dp.Owner= accessory.Data.Me;
+            dp.TargetPosition = pos1;
+            dp.ScaleMode = ScaleMode.YByDistance;
+            dp.DestoryAt=7000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp);
+
+            var dp2 = accessory.Data.GetDefaultDrawProperties();
+            dp2.Name = $"传送指路1-2";
+            dp2.Scale = new(2);
+            dp2.Color = accessory.Data.DefaultDangerColor;
+            dp2.Position = pos1;
+            dp2.TargetPosition = pos2;
+            dp2.ScaleMode = ScaleMode.YByDistance;
+            dp2.DestoryAt = 7000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp2);
+
+            var dp3 = accessory.Data.GetDefaultDrawProperties();
+            dp3.Name = $"传送指路2";
+            dp3.Scale = new(2);
+            dp3.Color = accessory.Data.DefaultSafeColor;
+            dp3.Owner= accessory.Data.Me;
+            dp3.TargetPosition = pos2;
+            dp3.ScaleMode = ScaleMode.YByDistance;
+            dp3.Delay = 7000;
+            dp3.DestoryAt = 3000;
+            accessory.Method.SendDraw(DrawModeEnum.Imgui, DrawTypeEnum.Displacement, dp3);
+
+        });
+    }
     #endregion
 
     #region 工具方法
@@ -405,6 +533,15 @@ public class 绝凯夫卡
         {
             sa.Log.Error(e.ToString());
         }
+    }
+    private Vector3 RotatePoint(Vector3 point, Vector3 centre, float radian)
+    {
+
+        Vector2 v2 = new(point.X - centre.X, point.Z - centre.Z);
+
+        var rot = (MathF.PI - MathF.Atan2(v2.X, v2.Y) + radian);
+        var lenth = v2.Length();
+        return new(centre.X + MathF.Sin(rot) * lenth, centre.Y, centre.Z - MathF.Cos(rot) * lenth);
     }
     #endregion
 
